@@ -1,5 +1,6 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using InMa.ShoppingList.Components;
+using InMa.ShoppingList.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddLogging();
 builder.Services.AddHttpClient();
 builder.Services.AddFluentUIComponents();
+
+builder.Services.AddSingleton<ShoppingListsRepository>();
 
 var app = builder.Build();
 

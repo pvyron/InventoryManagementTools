@@ -4,9 +4,11 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>2ca747ac-a3ed-42dd-8d32-1b2d87596032</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Azure.Data.Tables" Version="12.8.3" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.*-* "/>
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.*-* "/>
     </ItemGroup>
