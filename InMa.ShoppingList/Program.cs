@@ -12,7 +12,7 @@ builder.Services.AddLogging();
 builder.Services.AddHttpClient();
 builder.Services.AddFluentUIComponents();
 
-builder.Services.AddSingleton<ListsRepository>();
+builder.Services.AddSingleton<IListsRepository, ListsServerRepository>();
 
 var app = builder.Build();
 

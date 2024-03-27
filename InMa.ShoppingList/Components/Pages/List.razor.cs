@@ -7,7 +7,7 @@ namespace InMa.ShoppingList.Components.Pages;
 
 public partial class List
 {
-    [Inject] private ListsRepository ListsRepository { get; set; } = null!;
+    [Inject] private IListsRepository ListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Parameter] public string ListId { get; set; } = null!;
  
@@ -46,10 +46,9 @@ public partial class List
         {
             SavingList = true;
 
-            var newList = await ListsRepository.SaveShoppingList("test-user",
+            var updatedList = await ListsRepository.UpdateShoppingList("test-user", ListId,
                 Items.Select(i => (i.Product, i.Bought)).ToList(), CancellationToken.None);
-
-            NavigationManager.NavigateTo($"lists/{newList.Id}");
+            
         }
         finally
         {

@@ -6,7 +6,7 @@ namespace InMa.ShoppingList.Components.Pages;
 
 public partial class Lists
 {
-    [Inject] private ListsRepository listsRepository { get; set; } = null!;
+    [Inject] private IListsRepository listsRepository { get; set; } = null!;
     [Inject] private NavigationManager navigationManager { get; set; } = null!;
 
     private List<ListItem> Items { get; set; } = new();
