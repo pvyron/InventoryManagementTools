@@ -1,4 +1,5 @@
 ﻿using InMa.ShoppingList.DataAccess.Repositories;
+using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.DomainModels;
 using Microsoft.AspNetCore.Components;
 using ListItem = InMa.ShoppingList.ViewModels.ListItem;
@@ -26,17 +27,15 @@ public partial class List
             NavigationManager.NavigateTo("/error");
             return;
         }
-        
-        Items = list.Items.Select(i => new ListItem(i.Product)
-        {
-            Bought = i.Status switch
-            {
-                ListItemBoughtStatus.Bought => true,
-                ListItemBoughtStatus.NotBought => false,
-                _ => null
-            }
-        }).ToList();
-        
+
+        Items = list.Items
+            .Select(i =>
+                new ListItem(i.Product)
+                {
+                    Bought = i.Status.ToNullableBool()
+                })
+            .ToList();
+
         await base.OnInitializedAsync();
     }
 

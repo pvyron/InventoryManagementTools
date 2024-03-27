@@ -1,5 +1,6 @@
 ﻿using Azure.Data.Tables;
 using InMa.ShoppingList.DataAccess.Models;
+using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.DomainModels;
 
 namespace InMa.ShoppingList.DataAccess.Repositories;
@@ -42,7 +43,16 @@ public sealed class ListsServerRepository : IListsRepository
             return new List()
             {
                 Id = EntityId.Existing(entity.RowKey),
-                Items = entity.GetItems().Select(i => new ListItem{Id = EntityId.New(), Product = i.Product, Status = i.Status}).ToList()
+                Items = entity
+                    .GetItems()
+                    .Select(i => 
+                        new ListItem
+                        {
+                            Id = EntityId.New(), 
+                            Product = i.Product, 
+                            Status = i.Status
+                        })
+                    .ToList()
             };
         }
         catch (Exception ex)
@@ -63,12 +73,15 @@ public sealed class ListsServerRepository : IListsRepository
         List list = new()
         {
             Id = listId,
-            Items = items.Select(i => new ListItem{Id = EntityId.New(), Product = i.Product, Status = i.Bought switch
-            {
-                null => ListItemBoughtStatus.None,
-                true => ListItemBoughtStatus.Bought,
-                false => ListItemBoughtStatus.NotBought
-            }}).ToList()
+            Items = items
+                .Select(i => 
+                    new ListItem
+                    {
+                        Id = EntityId.New(), 
+                        Product = i.Product, 
+                        Status = i.Bought.ToListItemBoughtStatus()
+                    })
+                .ToList()
         };
 
         try
