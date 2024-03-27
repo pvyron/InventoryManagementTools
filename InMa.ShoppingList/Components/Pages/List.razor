@@ -1,8 +1,8 @@
-﻿@page "/lists"
+﻿@page "/lists/{listId}"
 @rendermode InteractiveServer
 
 <h3>
-    Shopping list
+    Shopping list - @ListId
     <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
                   Appearance="Appearance.Accent"
                   Loading="@SavingList"
@@ -10,7 +10,6 @@
         Save
     </FluentButton>
 </h3>
-
 
 <FluentTextField @bind-Value="@NewProductName" Label="Add item"></FluentTextField>
 <FluentButton IconStart="@(new Icons.Regular.Size12.Add())"
