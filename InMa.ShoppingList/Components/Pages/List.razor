@@ -1,26 +1,4 @@
 ﻿@page "/lists/{listId}"
 @rendermode InteractiveServer
 
-<h3>
-    Shopping list - @ListId
-    <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
-                  Appearance="Appearance.Accent"
-                  Loading="@SavingList"
-                  OnClick="@SaveList">
-        Save
-    </FluentButton>
-</h3>
-
-<FluentTextField @bind-Value="@NewProductName" Label="Add item"></FluentTextField>
-<FluentButton IconStart="@(new Icons.Regular.Size12.Add())"
-              Appearance="Appearance.Accent"
-              Loading="@AddingProduct"
-              OnClick="@AddNewProduct">
-</FluentButton>
-
-@foreach (var item in Items)
-{
-    <FluentStack Style="margin: 20px;">
-        <FluentCheckbox Id="@item.Product" ThreeState="true" @bind-CheckState="@item.Bought" Label="@item.Product" Style="min-width: 250px;" />
-    </FluentStack>
-}
+<InMa.ShoppingList.Components.Partials.ListPartial ListId="@ListId" />

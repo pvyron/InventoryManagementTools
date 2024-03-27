@@ -8,5 +8,8 @@ public interface IListsRepository
         List<(string Product, bool? Bought)> items, CancellationToken cancellationToken);
 
     ValueTask<List> SaveShoppingList(string userId, List<(string Product, bool? Bought)> items, CancellationToken cancellationToken);
+    
     ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken);
+
+    ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken);
 }

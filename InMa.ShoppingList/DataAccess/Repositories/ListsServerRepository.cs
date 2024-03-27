@@ -33,6 +33,9 @@ public sealed class ListsServerRepository : IListsRepository
     {
         try
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(listId);
+            
             var response =
                 await _tableClient.GetEntityAsync<ListTableEntity>(userId, listId, cancellationToken: cancellationToken);
 
@@ -64,6 +67,48 @@ public sealed class ListsServerRepository : IListsRepository
                 ex.Message);
             
             return null;
+        }
+    }
+
+    public async ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var lists = new List<List>();
+            
+            var listPages = _tableClient.QueryAsync<ListTableEntity>($"PartitionKey eq '{userId}'").AsPages();
+
+            await foreach (var listPage in listPages)
+            {
+                foreach (var listTableEntity in listPage.Values)
+                {
+                    lists.Add(new List
+                    {
+                        Id = EntityId.Existing(listTableEntity.RowKey),
+                        Items = listTableEntity
+                            .GetItems()
+                            .Select(i => 
+                                new ListItem
+                                {
+                                    Id = EntityId.New(), 
+                                    Product = i.Product, 
+                                    Status = i.Status
+                                })
+                            .ToList()
+                    });
+                }
+            }
+
+            return lists;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                "Failed to fetch shopping lists for user: {userId}. Error: {errorMessage}",
+                userId, 
+                ex.Message);
+
+            return Enumerable.Empty<List>();
         }
     }
 
