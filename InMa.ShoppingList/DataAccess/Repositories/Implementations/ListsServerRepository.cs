@@ -1,21 +1,24 @@
 ﻿using Azure.Data.Tables;
+using InMa.ShoppingList.Components.Services;
 using InMa.ShoppingList.DataAccess.Models;
+using InMa.ShoppingList.DataAccess.Repositories.Abstractions;
 using InMa.ShoppingList.DataAccess.Repositories.Models;
 using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.DomainModels;
 
-namespace InMa.ShoppingList.DataAccess.Repositories;
+namespace InMa.ShoppingList.DataAccess.Repositories.Implementations;
 
 public sealed class ListsServerRepository : IListsRepository
 {
     private readonly ILogger<ListsServerRepository> _logger;
+    private readonly KeyBearingService _keyBearingService;
     private readonly TableClient _tableClient;
     
-    public ListsServerRepository(IConfiguration configuration, ILogger<ListsServerRepository> logger)
+    public ListsServerRepository(IConfiguration configuration, ILogger<ListsServerRepository> logger, KeyBearingService keyBearingService)
     {
         _logger = logger;
-        
-        // TODO: make sure this exists on app startup
+        _keyBearingService = keyBearingService;
+
         _tableClient = new(configuration.GetConnectionString("StorageAccount"), configuration.GetValue<string>("ShoppingLists:ListsTable"));
     }
 
@@ -35,6 +38,8 @@ public sealed class ListsServerRepository : IListsRepository
                     })
                 .ToList()
         };
+
+        if (!_keyBearingService.IsAuthorized()) return list;
 
         try
         {
@@ -79,6 +84,8 @@ public sealed class ListsServerRepository : IListsRepository
     {
         try
         {
+            if (!_keyBearingService.IsAuthorized()) return null;
+            
             ArgumentException.ThrowIfNullOrWhiteSpace(userId);
             ArgumentException.ThrowIfNullOrWhiteSpace(listId);
             
@@ -123,6 +130,8 @@ public sealed class ListsServerRepository : IListsRepository
         {
             var lists = new List<List>();
             
+            if (!_keyBearingService.IsAuthorized()) return lists;
+            
             var listPages = _tableClient.QueryAsync<ListTableEntity>($"PartitionKey eq '{userId}'").AsPages();
 
             await foreach (var listPage in listPages)
@@ -160,5 +169,8 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    
+    public async Task Initialize()
+    {
+        await _tableClient.CreateIfNotExistsAsync();
+    }
 }

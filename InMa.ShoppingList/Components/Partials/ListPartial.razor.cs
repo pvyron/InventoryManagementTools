@@ -1,4 +1,5 @@
 ﻿using InMa.ShoppingList.DataAccess.Repositories;
+using InMa.ShoppingList.DataAccess.Repositories.Abstractions;
 using InMa.ShoppingList.DataAccess.Repositories.Models;
 using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.ViewModels;
@@ -11,8 +12,19 @@ public partial class ListPartial
     [Inject] private IListsRepository ListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Parameter] public string? ListId { get; set; }
- 
-    private List<ListItem> Items { get; set; } = new();
+
+    private ListViewModel ListViewModel { get; set; } = new();
+
+    private string ShoppingListTittle
+    {
+        get
+        {
+            if (ListId is null)
+                return "Shopping List";
+
+            return $"Shopping List - {ListViewModel.ListName}";
+        }
+    }
 
     private string NewProductName { get; set; } = string.Empty;
     private bool AddingProduct { get; set; } = false;
@@ -22,7 +34,7 @@ public partial class ListPartial
     {
         if (ListId is null)
             return;
-        
+
         var list = await ListsRepository.GetShoppingList("test-user", ListId, CancellationToken.None);
 
         if (list is null)
@@ -31,13 +43,18 @@ public partial class ListPartial
             return;
         }
 
-        Items = list.Items
-            .Select(i =>
-                new ListItem(i.Product)
-                {
-                    Bought = i.Status.ToNullableBool()
-                })
-            .ToList();
+        ListViewModel = new()
+        {
+            ListId = list.Id,
+            ListName = list.Name,
+            Items = list.Items
+                .Select(i =>
+                    new ListItem(i.Product)
+                    {
+                        Bought = i.Status.ToNullableBool()
+                    })
+                .ToList()
+        };
 
         await base.OnInitializedAsync();
     }
@@ -48,12 +65,15 @@ public partial class ListPartial
         {
             SavingList = true;
 
+            if (string.IsNullOrWhiteSpace(ListViewModel.ListName))
+                return;
+            
             if (ListId is null)
             {
                 var saveData = new SaveShoppingListData
                 {
-                    Name = NewProductName,
-                    Items = Items.Select(i => (i.Product, i.Bought)).ToList()
+                    Name = ListViewModel.ListName,
+                    Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
                 var newList = await ListsRepository.SaveShoppingList("test-user", saveData, CancellationToken.None);
@@ -65,8 +85,8 @@ public partial class ListPartial
                 var updateData = new UpdateShoppingListData
                 {
                     Id = ListId,
-                    Name = NewProductName,
-                    Items = Items.Select(i => (i.Product, i.Bought)).ToList()
+                    Name = ListViewModel.ListName,
+                    Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
                 var updatedList =
@@ -90,12 +110,12 @@ public partial class ListPartial
                 return Task.CompletedTask;
             }
 
-            if (Items.Any(i => i.Product.Equals(NewProductName, StringComparison.OrdinalIgnoreCase)))
+            if (ListViewModel.Items.Any(i => i.Product.Equals(NewProductName, StringComparison.OrdinalIgnoreCase)))
             {
                 return Task.CompletedTask;
             }
 
-            Items.Add(new ListItem(NewProductName));
+            ListViewModel.Items.Add(new ListItem(NewProductName));
             
             return Task.CompletedTask;
         }

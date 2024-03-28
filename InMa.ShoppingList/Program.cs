@@ -1,6 +1,9 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using InMa.ShoppingList.Components;
-using InMa.ShoppingList.DataAccess.Repositories;
+using InMa.ShoppingList.Components.Services;
+using InMa.ShoppingList.DataAccess.Repositories.Abstractions;
+using InMa.ShoppingList.DataAccess.Repositories.Implementations;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +15,12 @@ builder.Services.AddLogging();
 builder.Services.AddHttpClient();
 builder.Services.AddFluentUIComponents();
 
-builder.Services.AddSingleton<IListsRepository, ListsServerRepository>();
+builder.Services.AddScoped<KeyBearingService>();
+builder.Services.AddScoped<IListsRepository, ListsServerRepository>();
 
 var app = builder.Build();
+
+await RunStartupSequence(app);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -33,3 +39,11 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+
+async Task RunStartupSequence(WebApplication application)
+{
+    using var scope = application.Services.CreateScope();
+    var listsRepository = scope.ServiceProvider.GetRequiredService<IListsRepository>();
+    await listsRepository.Initialize();
+}

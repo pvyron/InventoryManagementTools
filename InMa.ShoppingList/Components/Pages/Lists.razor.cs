@@ -1,4 +1,4 @@
-﻿using InMa.ShoppingList.DataAccess.Repositories;
+﻿using InMa.ShoppingList.DataAccess.Repositories.Abstractions;
 using InMa.ShoppingList.DomainExtensions;
 using Microsoft.AspNetCore.Components;
 

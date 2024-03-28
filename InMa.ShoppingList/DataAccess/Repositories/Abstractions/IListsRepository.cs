@@ -1,9 +1,9 @@
 ﻿using InMa.ShoppingList.DataAccess.Repositories.Models;
 using InMa.ShoppingList.DomainModels;
 
-namespace InMa.ShoppingList.DataAccess.Repositories;
+namespace InMa.ShoppingList.DataAccess.Repositories.Abstractions;
 
-public interface IListsRepository
+public interface IListsRepository : IStartupProcess
 {
     ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken);
 
