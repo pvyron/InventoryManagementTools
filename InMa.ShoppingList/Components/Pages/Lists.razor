@@ -8,13 +8,24 @@
     <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
                   Appearance="Appearance.Accent"
                   OnClick="@GoToSelectedList">
-        Pick shopping list @selectedList.Id
+        Pick @selectedList.Name
     </FluentButton>
 }
+
+<FluentButton IconStart="@(new Icons.Regular.Size28.News())"
+                  Appearance="Appearance.Accent"
+                  OnClick="@GoToNewList">
+        Create new
+    </FluentButton>
 
 <FluentListbox ValueChanged="@SelectedListChanged" TOption="string">
     @foreach (var list in lists)
     {
-        <FluentOption Value="@list.Id">@list.Id</FluentOption>
+        <FluentOption Value="@list.Id" Style="height: fit-content">
+            <div style="align-content: space-between; ">
+                <p style="margin: auto">@list.Name</p>
+                <p style="margin: auto">@list.Id</p>
+            </div>
+        </FluentOption>
     }
 </FluentListbox>

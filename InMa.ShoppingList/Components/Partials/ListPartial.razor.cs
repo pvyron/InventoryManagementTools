@@ -1,4 +1,5 @@
 ﻿using InMa.ShoppingList.DataAccess.Repositories;
+using InMa.ShoppingList.DataAccess.Repositories.Models;
 using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -49,13 +50,27 @@ public partial class ListPartial
 
             if (ListId is null)
             {
-                var newList = await ListsRepository.SaveShoppingList("test-user",
-                    Items.Select(i => (i.Product, i.Bought)).ToList(), CancellationToken.None);
+                var saveData = new SaveShoppingListData
+                {
+                    Name = NewProductName,
+                    Items = Items.Select(i => (i.Product, i.Bought)).ToList()
+                };
+
+                var newList = await ListsRepository.SaveShoppingList("test-user", saveData, CancellationToken.None);
+                
+                NavigationManager.NavigateTo($"/lists/saved/{newList.Id}");
             }
             else
             {
-                var updatedList = await ListsRepository.UpdateShoppingList("test-user", ListId,
-                    Items.Select(i => (i.Product, i.Bought)).ToList(), CancellationToken.None);
+                var updateData = new UpdateShoppingListData
+                {
+                    Id = ListId,
+                    Name = NewProductName,
+                    Items = Items.Select(i => (i.Product, i.Bought)).ToList()
+                };
+
+                var updatedList =
+                    await ListsRepository.UpdateShoppingList("test-user", updateData, CancellationToken.None);
             }
         }
         finally

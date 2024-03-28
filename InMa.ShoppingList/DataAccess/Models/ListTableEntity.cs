@@ -7,11 +7,13 @@ namespace InMa.ShoppingList.DataAccess.Models;
 
 public class ListTableEntity : ITableEntity
 {
-    public string PartitionKey { get; set; } = null!;
-    public string RowKey { get; set; } = null!;
+    public required string PartitionKey { get; set; }
+    public required string RowKey { get; set; }
     public DateTimeOffset? Timestamp { get; set; }
     public ETag ETag { get; set; }
 
+    public required string Name { get; set; }
+    
     public string BoughtProducts { get; set; } = string.Empty;
     public string NotBoughtProducts { get; set; } = string.Empty;
     public string UnknownStatusProducts { get; set; } = string.Empty;

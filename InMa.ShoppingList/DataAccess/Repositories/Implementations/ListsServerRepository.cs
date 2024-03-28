@@ -1,5 +1,6 @@
 ﻿using Azure.Data.Tables;
 using InMa.ShoppingList.DataAccess.Models;
+using InMa.ShoppingList.DataAccess.Repositories.Models;
 using InMa.ShoppingList.DomainExtensions;
 using InMa.ShoppingList.DomainModels;
 
@@ -18,15 +19,60 @@ public sealed class ListsServerRepository : IListsRepository
         _tableClient = new(configuration.GetConnectionString("StorageAccount"), configuration.GetValue<string>("ShoppingLists:ListsTable"));
     }
 
-    public ValueTask<List> UpdateShoppingList(string userId, string listId,
-        List<(string Product, bool? Bought)> items, CancellationToken cancellationToken)
+    public async ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)
     {
-        return UpdateShoppingList(userId, EntityId.Existing(listId), items, cancellationToken);
+        List list = new()
+        {
+            Id = EntityId.Existing(updateData.Id),
+            Name = updateData.Name,
+            Items = updateData.Items
+                .Select(i => 
+                    new ListItem
+                    {
+                        Id = EntityId.New(), 
+                        Product = i.Product, 
+                        Status = i.Bought.ToListItemBoughtStatus()
+                    })
+                .ToList()
+        };
+
+        try
+        {
+            // TODO: create mapper
+            ListTableEntity entity = new()
+            {
+                PartitionKey = userId,
+                RowKey = list.Id,
+                Name = list.Name
+            };
+            entity.SetItems(list.Items.Select(i => (i.Product, i.Status)));
+            
+            await _tableClient.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                "Failed to save shopping list with id: {shoppingListId} for user: {userId}, with items: {items}. Error: {errorMessage}", 
+                list.Id,
+                userId, 
+                string.Join(", ", updateData.Items.Select(i => $"{i.Product} - {i.Bought.GetValueOrDefault(false)}")), 
+                ex.Message);
+        }
+        
+        return list;
     }
     
-    public ValueTask<List> SaveShoppingList(string userId, List<(string Product, bool? Bought)> items, CancellationToken cancellationToken)
+    public ValueTask<List> SaveShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken)
     {
-        return UpdateShoppingList(userId, EntityId.New(), items, cancellationToken);
+        var updateData = new UpdateShoppingListData
+        {
+            Id = EntityId.New(),
+            Name = saveData.Name,
+            Items = saveData.Items
+        };
+        
+        return UpdateShoppingList(userId, updateData, cancellationToken);
     }
 
     public async ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken)
@@ -46,6 +92,7 @@ public sealed class ListsServerRepository : IListsRepository
             return new List()
             {
                 Id = EntityId.Existing(entity.RowKey),
+                Name = entity.Name,
                 Items = entity
                     .GetItems()
                     .Select(i => 
@@ -85,6 +132,7 @@ public sealed class ListsServerRepository : IListsRepository
                     lists.Add(new List
                     {
                         Id = EntityId.Existing(listTableEntity.RowKey),
+                        Name = listTableEntity.Name,
                         Items = listTableEntity
                             .GetItems()
                             .Select(i => 
@@ -112,46 +160,5 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    private async ValueTask<List> UpdateShoppingList(string userId, EntityId listId,
-        List<(string Product, bool? Bought)> items, CancellationToken cancellationToken)
-    {
-        List list = new()
-        {
-            Id = listId,
-            Items = items
-                .Select(i => 
-                    new ListItem
-                    {
-                        Id = EntityId.New(), 
-                        Product = i.Product, 
-                        Status = i.Bought.ToListItemBoughtStatus()
-                    })
-                .ToList()
-        };
-
-        try
-        {
-            // TODO: create mapper
-            ListTableEntity entity = new()
-            {
-                PartitionKey = userId,
-                RowKey = list.Id
-            };
-            entity.SetItems(list.Items.Select(i => (i.Product, i.Status)));
-            
-            await _tableClient.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace,
-                cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                "Failed to save shopping list with id: {shoppingListId} for user: {userId}, with items: {items}. Error: {errorMessage}", 
-                list.Id,
-                userId, 
-                string.Join(", ", items.Select(i => $"{i.Product} - {i.Bought.GetValueOrDefault(false)}")), 
-                ex.Message);
-        }
-        
-        return list;
-    }
+    
 }

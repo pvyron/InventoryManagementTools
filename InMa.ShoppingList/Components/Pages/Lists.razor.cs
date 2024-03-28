@@ -32,6 +32,11 @@ public partial class Lists
         if (selectedList is null)
             return;
        
-        navigationManager.NavigateTo($"/lists/{selectedList.Id}");
+        navigationManager.NavigateTo($"/lists/saved/{selectedList.Id}");
+    }
+
+    void GoToNewList()
+    {
+        navigationManager.NavigateTo($"/lists/new");
     }
 }
