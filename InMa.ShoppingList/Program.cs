@@ -1,9 +1,11 @@
+using Blazored.LocalStorage;
 using Microsoft.FluentUI.AspNetCore.Components;
 using InMa.ShoppingList.Components;
 using InMa.ShoppingList.Components.Services;
 using InMa.ShoppingList.DataAccess.Repositories.Abstractions;
 using InMa.ShoppingList.DataAccess.Repositories.Implementations;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,8 @@ builder.Services.AddLogging();
 builder.Services.AddHttpClient();
 builder.Services.AddFluentUIComponents();
 
-builder.Services.AddScoped<KeyBearingService>();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<KeyCheckingService>();
 builder.Services.AddScoped<IListsRepository, ListsServerRepository>();
 
 var app = builder.Build();

@@ -12,11 +12,11 @@ public partial class Lists
     private List<DomainModels.List> lists { get; set; } = new();
     private DomainModels.List? selectedList { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         lists = await listsRepository.GetShoppingListsForUser("test-user", CancellationToken.None).ToListAsync();
         
-        await base.OnInitializedAsync();
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     void SelectedListChanged(string? pickedListId)

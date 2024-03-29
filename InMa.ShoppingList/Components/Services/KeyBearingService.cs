@@ -1,26 +1,32 @@
-﻿namespace InMa.ShoppingList.Components.Services;
+﻿using Blazored.LocalStorage;
 
-public sealed class KeyBearingService
+namespace InMa.ShoppingList.Components.Services;
+
+public sealed class KeyCheckingService
 {
+    private const string KeyName = "AuthKey";
+    
+    private readonly ILocalStorageService _localStorageService;
     private readonly string? _correctKey;
     
-    public KeyBearingService(IConfiguration configuration)
+    public KeyCheckingService(IConfiguration configuration, ILocalStorageService localStorageService)
     {
-        _correctKey = configuration.GetValue<string>("AuthKey");
-    }
-    
-    public string? Key { get; private set; }
-
-    public void SaveKey(string key)
-    {
-        Key = key;
+        _localStorageService = localStorageService;
+        _correctKey = configuration.GetValue<string>(KeyName);
     }
 
-    public bool IsAuthorized()
+    public async Task SaveKey(string key, CancellationToken cancellationToken)
     {
-        if (Key is null || _correctKey is null)
+        await _localStorageService.SetItemAsStringAsync(KeyName, key, cancellationToken);
+    }
+
+    public async Task<bool> IsAuthorized(CancellationToken cancellationToken)
+    {
+        var suppliedKey = await _localStorageService.GetItemAsStringAsync(KeyName, cancellationToken);
+        
+        if (suppliedKey is null || _correctKey is null)
             return false;
 
-        return Key == _correctKey;
+        return suppliedKey == _correctKey;
     }
 }

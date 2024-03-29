@@ -30,7 +30,7 @@ public partial class ListPartial
     private bool AddingProduct { get; set; } = false;
     private bool SavingList { get; set; } = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (ListId is null)
             return;
@@ -95,6 +95,7 @@ public partial class ListPartial
         }
         finally
         {
+            NewProductName = string.Empty;
             SavingList = false;
         }
     }
@@ -117,10 +118,11 @@ public partial class ListPartial
 
             ListViewModel.Items.Add(new ListItem(NewProductName));
             
-            return Task.CompletedTask;
+            return SaveList();
         }
         finally
         {
+            NewProductName = string.Empty;
             AddingProduct = false;
         }
     }

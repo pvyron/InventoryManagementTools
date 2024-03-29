@@ -11,13 +11,13 @@ namespace InMa.ShoppingList.DataAccess.Repositories.Implementations;
 public sealed class ListsServerRepository : IListsRepository
 {
     private readonly ILogger<ListsServerRepository> _logger;
-    private readonly KeyBearingService _keyBearingService;
+    private readonly KeyCheckingService _keyBearingService;
     private readonly TableClient _tableClient;
     
-    public ListsServerRepository(IConfiguration configuration, ILogger<ListsServerRepository> logger, KeyBearingService keyBearingService)
+    public ListsServerRepository(IConfiguration configuration, ILogger<ListsServerRepository> logger, KeyCheckingService keyCheckingService)
     {
         _logger = logger;
-        _keyBearingService = keyBearingService;
+        _keyBearingService = keyCheckingService;
 
         _tableClient = new(configuration.GetConnectionString("StorageAccount"), configuration.GetValue<string>("ShoppingLists:ListsTable"));
     }
@@ -39,7 +39,7 @@ public sealed class ListsServerRepository : IListsRepository
                 .ToList()
         };
 
-        if (!_keyBearingService.IsAuthorized()) return list;
+        if (!await _keyBearingService.IsAuthorized(cancellationToken)) return list;
 
         try
         {
@@ -84,7 +84,7 @@ public sealed class ListsServerRepository : IListsRepository
     {
         try
         {
-            if (!_keyBearingService.IsAuthorized()) return null;
+            if (!await _keyBearingService.IsAuthorized(cancellationToken)) return null;
             
             ArgumentException.ThrowIfNullOrWhiteSpace(userId);
             ArgumentException.ThrowIfNullOrWhiteSpace(listId);
@@ -130,7 +130,7 @@ public sealed class ListsServerRepository : IListsRepository
         {
             var lists = new List<List>();
             
-            if (!_keyBearingService.IsAuthorized()) return lists;
+            if (!await _keyBearingService.IsAuthorized(cancellationToken)) return lists;
             
             var listPages = _tableClient.QueryAsync<ListTableEntity>($"PartitionKey eq '{userId}'").AsPages();
 
