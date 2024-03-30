@@ -1,4 +1,6 @@
-﻿using InMa.Shopping.Data.Repositories.Abstractions;
+﻿using System.Diagnostics;
+using System.Timers;
+using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
@@ -12,25 +14,20 @@ public partial class ShoppingListPartial
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Parameter] public string? ListId { get; set; }
 
+    private string ShoppingListTittle => ListId is null ? "Shopping List" : $"Shopping List - {ListViewModel.ListName}";
     private ListViewModel ListViewModel { get; set; } = new();
-
-    private string ShoppingListTittle
-    {
-        get
-        {
-            if (ListId is null)
-                return "Shopping List";
-
-            return $"Shopping List - {ListViewModel.ListName}";
-        }
-    }
 
     private string NewProductName { get; set; } = string.Empty;
     private bool AddingProduct { get; set; } = false;
     private bool RemovingProduct { get; set; } = false;
-    private bool SavingList { get; set; } = false;
+
+    private SemaphoreSlim Savelock = new SemaphoreSlim(1, 1);
+    private bool SavingList { get; set; }
     private bool DeletingList { get; set; } = false;
 
+    private System.Timers.Timer SavingCooldown = new(5000);
+    private bool AwaitingSave = false;
+    
     protected override async Task OnInitializedAsync()
     {
         if (ListId is null)
@@ -56,14 +53,31 @@ public partial class ShoppingListPartial
                     })
                 .ToList()
         };
+        
+        SavingCooldown.Elapsed += async ( sender, e ) => await OnTimedEvent(sender, e);;
+        SavingCooldown.AutoReset = true;
+        SavingCooldown.Enabled = true;
 
         await base.OnInitializedAsync();
     }
+    
+    private async Task OnTimedEvent(object? source, ElapsedEventArgs e)
+    {
+        if (AwaitingSave) await SaveList(true);
+    }
 
-    async Task SaveList()
+    async Task SaveList(bool forced = false)
     {
         try
         {
+            if (!forced)
+            {
+                AwaitingSave = true;
+                return;
+            }
+            
+            await Savelock.WaitAsync();
+            
             SavingList = true;
 
             if (string.IsNullOrWhiteSpace(ListViewModel.ListName))
@@ -93,10 +107,14 @@ public partial class ShoppingListPartial
                 var updatedList =
                     await ListsRepository.UpdateShoppingList("test-user", updateData, CancellationToken.None);
             }
+
+            await Task.Delay(1000);
         }
         finally
         {
+            Savelock.Release();
             SavingList = false;
+            AwaitingSave = false;
         }
     }
     
@@ -119,6 +137,8 @@ public partial class ShoppingListPartial
         }
     }
 
+    Task SaveList() => SaveList(true);
+    
     Task AddNewProduct()
     {
         try
@@ -136,7 +156,7 @@ public partial class ShoppingListPartial
             }
 
             ListViewModel.Items.Add(new ListItem(NewProductName));
-            
+
             return SaveList();
         }
         finally
@@ -163,12 +183,17 @@ public partial class ShoppingListPartial
             }
 
             ListViewModel.Items.RemoveAll(i => i.Product.Equals(productName, StringComparison.OrdinalIgnoreCase));
-            
+
             return SaveList();
         }
         finally
         {
             RemovingProduct = false;
         }
+    }
+
+    Task CheckboxChanged()
+    {
+        return SaveList();
     }
 }
