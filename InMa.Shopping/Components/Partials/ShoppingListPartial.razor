@@ -3,7 +3,7 @@
 <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
               Appearance="Appearance.Accent"
               Loading="@SavingList"
-              OnClick="@SaveList">
+              OnClick="@SaveListButtonClicked">
     Save
     </FluentButton>
 @if (ListId is not null)
@@ -23,7 +23,7 @@
 <FluentButton IconStart="@(new Icons.Regular.Size12.Add())"
               Appearance="Appearance.Accent"
               Loading="@AddingProduct"
-              OnClick="@AddNewProduct">
+              OnClick="@AddNewProductButtonClicked">
 </FluentButton>
 
 @foreach (var item in ListViewModel.Items)
@@ -33,7 +33,7 @@
         <FluentButton IconStart="@(new Icons.Regular.Size12.Delete())"
                       Appearance="Appearance.Accent"
                       Loading="@RemovingProduct"
-                      OnClick="@(_ => { return RemoveProduct(item.Product); })">
+                      OnClick="@(_ => { return RemoveProductButtonClicked(item.Product); })">
         </FluentButton>
     </FluentStack>
 }

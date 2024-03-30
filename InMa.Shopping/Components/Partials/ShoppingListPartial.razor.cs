@@ -14,19 +14,21 @@ public partial class ShoppingListPartial
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Parameter] public string? ListId { get; set; }
 
-    private string ShoppingListTittle => ListId is null ? "Shopping List" : $"Shopping List - {ListViewModel.ListName}";
-    private ListViewModel ListViewModel { get; set; } = new();
+    private System.Timers.Timer _savingCooldown = new(10000)
+    {
+        AutoReset = true,
+        Enabled = true
+    };
+    private bool _awaitingSave = false;
 
+    private ListViewModel ListViewModel { get; set; } = new();
+    
+    private string ShoppingListTittle => ListId is null ? "Shopping List" : $"Shopping List - {ListViewModel.ListName}";
     private string NewProductName { get; set; } = string.Empty;
     private bool AddingProduct { get; set; } = false;
     private bool RemovingProduct { get; set; } = false;
-
-    private SemaphoreSlim Savelock = new SemaphoreSlim(1, 1);
     private bool SavingList { get; set; }
     private bool DeletingList { get; set; } = false;
-
-    private System.Timers.Timer SavingCooldown = new(5000);
-    private bool AwaitingSave = false;
     
     protected override async Task OnInitializedAsync()
     {
@@ -53,31 +55,35 @@ public partial class ShoppingListPartial
                     })
                 .ToList()
         };
-        
-        SavingCooldown.Elapsed += async ( sender, e ) => await OnTimedEvent(sender, e);;
-        SavingCooldown.AutoReset = true;
-        SavingCooldown.Enabled = true;
 
+        _savingCooldown.Elapsed += async (sender, e) => await OnTimedEvent(sender, e);
+        
         await base.OnInitializedAsync();
     }
     
     private async Task OnTimedEvent(object? source, ElapsedEventArgs e)
     {
-        if (AwaitingSave) await SaveList(true);
+        try
+        {
+            if (_awaitingSave) await SaveList(true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     async Task SaveList(bool forced = false)
     {
+        if (!forced)
+        {
+            Console.WriteLine("Save not forced added to queue");
+            _awaitingSave = true;
+            return;
+        }
+        
         try
         {
-            if (!forced)
-            {
-                AwaitingSave = true;
-                return;
-            }
-            
-            await Savelock.WaitAsync();
-            
             SavingList = true;
 
             if (string.IsNullOrWhiteSpace(ListViewModel.ListName))
@@ -108,13 +114,13 @@ public partial class ShoppingListPartial
                     await ListsRepository.UpdateShoppingList("test-user", updateData, CancellationToken.None);
             }
 
+            Console.WriteLine("Save completed");
             await Task.Delay(1000);
         }
         finally
         {
-            Savelock.Release();
             SavingList = false;
-            AwaitingSave = false;
+            _awaitingSave = false;
         }
     }
     
@@ -137,9 +143,9 @@ public partial class ShoppingListPartial
         }
     }
 
-    Task SaveList() => SaveList(true);
+    Task SaveListButtonClicked() => SaveList(true);
     
-    Task AddNewProduct()
+    Task AddNewProductButtonClicked()
     {
         try
         {
@@ -166,7 +172,7 @@ public partial class ShoppingListPartial
         }
     }
     
-    Task RemoveProduct(string productName)
+    Task RemoveProductButtonClicked(string productName)
     {
         try
         {
