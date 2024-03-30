@@ -14,15 +14,7 @@
 
 <h1>Register confirmation</h1>
 
-@*TODO: implement desirable approval system*@
-<p>
-    <b>
-        THIS DOESN'T WORK ON DEPLOYED SYSTEM,
-    </b>
-    will implement concrete approval system, for now only available for testing on <a href="https://github.com/pvyron/InventoryManagementTools">open source repository</a> with own db credentials.
-</p>
-    
-    <StatusMessage Message="@statusMessage"/>
+<StatusMessage Message="@statusMessage"/>
 
 @if (emailConfirmationLink is not null)
 {
@@ -61,10 +53,6 @@ else
         }
         else if (EmailSender is IdentityNoOpEmailSender)
         {
-            // This is here temporarily to block spam on deployed app until I implement a more concrete method
-            // TODO: implement desirable approval system
-            return;
-            
             // Once you add a real email sender, you should remove this code that lets you confirm the account
             var userId = await UserManager.GetUserIdAsync(user);
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
