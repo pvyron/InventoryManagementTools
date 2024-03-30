@@ -1,0 +1,41 @@
+﻿
+<FluentStack>
+    <h3>@ShoppingListTittle</h3>
+    <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
+                  Appearance="Appearance.Accent"
+                  Loading="@SavingList"
+                  OnClick="@SaveList">
+        Save
+        </FluentButton>
+    @if (ListId is not null)
+    {
+        <FluentButton IconStart="@(new Icons.Regular.Size28.Delete())"
+                      Appearance="Appearance.Accent"
+                      Loading="@DeletingList"
+                      OnClick="@DeleteList">
+            Delete
+        </FluentButton>
+    }
+</FluentStack>
+
+<FluentTextField @bind-Value="@ListViewModel.ListName" Label="Shopping list name"></FluentTextField>
+
+<FluentTextField @bind-Value="@NewProductName" Label="Add item"></FluentTextField>
+
+<FluentButton IconStart="@(new Icons.Regular.Size12.Add())"
+              Appearance="Appearance.Accent"
+              Loading="@AddingProduct"
+              OnClick="@AddNewProduct">
+</FluentButton>
+
+@foreach (var item in ListViewModel.Items)
+{
+    <FluentStack Style="margin: 20px;">
+        <FluentCheckbox Id="@item.Product" ThreeState="true" @bind-CheckState="@item.Bought" Label="@item.Product" Style="min-width: 250px;"/>
+        <FluentButton IconStart="@(new Icons.Regular.Size12.Delete())"
+                      Appearance="Appearance.Accent"
+                      Loading="@RemovingProduct"
+                      OnClick="@(_ => { return RemoveProduct(item.Product); })">
+        </FluentButton>
+    </FluentStack>
+}

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.ShoppingList", "InMa.ShoppingList\InMa.ShoppingList.csproj", "{E3816CD3-74F9-44C1-B68A-A076B1A9488F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.Shopping", "InMa.Shopping\InMa.Shopping.csproj", "{BAC626E0-6A38-4775-AFD7-5220A45155AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +8,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E3816CD3-74F9-44C1-B68A-A076B1A9488F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3816CD3-74F9-44C1-B68A-A076B1A9488F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3816CD3-74F9-44C1-B68A-A076B1A9488F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3816CD3-74F9-44C1-B68A-A076B1A9488F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAC626E0-6A38-4775-AFD7-5220A45155AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC626E0-6A38-4775-AFD7-5220A45155AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAC626E0-6A38-4775-AFD7-5220A45155AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC626E0-6A38-4775-AFD7-5220A45155AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
