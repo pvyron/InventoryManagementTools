@@ -1,10 +1,13 @@
 ﻿using System.Timers;
 using InMa.Shopping.Components.Account;
+using InMa.Shopping.Components.Layout;
+using InMa.Shopping.Data;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
@@ -12,30 +15,37 @@ public partial class ShoppingListPartial
 {
     [Inject] private IListsRepository ListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Parameter] public string? ListId { get; set; }
 
+    private string? _username;
     private System.Timers.Timer _savingCooldown = new(10000)
     {
         AutoReset = true,
         Enabled = true
     };
+
     private bool _awaitingSave = false;
 
     private ListViewModel ListViewModel { get; set; } = new();
-    
+
     private string ShoppingListTittle => ListId is null ? "Shopping List" : $"Shopping List - {ListViewModel.ListName}";
     private string NewProductName { get; set; } = string.Empty;
     private bool AddingProduct { get; set; } = false;
     private bool RemovingProduct { get; set; } = false;
     private bool SavingList { get; set; }
     private bool DeletingList { get; set; } = false;
-    
+
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
+        _username ??= (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
+        
         if (ListId is null)
             return;
 
-        var list = await ListsRepository.GetShoppingList("test-user", ListId, CancellationToken.None);
+        var list = await ListsRepository.GetShoppingList(await GetUsername(), ListId, CancellationToken.None);
 
         if (list is null)
         {
@@ -56,21 +66,7 @@ public partial class ShoppingListPartial
                 .ToList()
         };
 
-        _savingCooldown.Elapsed += async (sender, e) => await OnTimedEvent(sender, e);
-        
-        await base.OnInitializedAsync();
-    }
-    
-    private async Task OnTimedEvent(object? source, ElapsedEventArgs e)
-    {
-        try
-        {
-            if (_awaitingSave) await SaveList(true);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+        _savingCooldown.Elapsed += async (sender, e) => await OnAutosaveCooldown(sender, e);
     }
 
     async Task SaveList(bool forced = false)
@@ -81,14 +77,14 @@ public partial class ShoppingListPartial
             _awaitingSave = true;
             return;
         }
-        
+
         try
         {
             SavingList = true;
 
             if (string.IsNullOrWhiteSpace(ListViewModel.ListName))
                 return;
-            
+
             if (ListId is null)
             {
                 var saveData = new SaveShoppingListData
@@ -97,8 +93,9 @@ public partial class ShoppingListPartial
                     Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
-                var newList = await ListsRepository.SaveShoppingList("test-user", saveData, CancellationToken.None);
-                
+                var newList =
+                    await ListsRepository.SaveShoppingList(await GetUsername(), saveData, CancellationToken.None);
+
                 NavigationManager.NavigateTo($"/lists/saved/{newList.Id}");
             }
             else
@@ -111,7 +108,7 @@ public partial class ShoppingListPartial
                 };
 
                 var updatedList =
-                    await ListsRepository.UpdateShoppingList("test-user", updateData, CancellationToken.None);
+                    await ListsRepository.UpdateShoppingList(await GetUsername(), updateData, CancellationToken.None);
             }
 
             Console.WriteLine("Save completed");
@@ -123,7 +120,7 @@ public partial class ShoppingListPartial
             _awaitingSave = false;
         }
     }
-    
+
     async Task DeleteList()
     {
         try
@@ -133,8 +130,8 @@ public partial class ShoppingListPartial
             if (ListId is null)
                 return;
 
-            await ListsRepository.DeleteShoppingList("test-user", ListId, CancellationToken.None);
-            
+            await ListsRepository.DeleteShoppingList(await GetUsername(), ListId, CancellationToken.None);
+
             NavigationManager.NavigateTo("/lists");
         }
         finally
@@ -143,14 +140,31 @@ public partial class ShoppingListPartial
         }
     }
 
+    async Task<string> GetUsername()
+    {
+        return _username?? "invalid-user";
+    }
+
+    async Task OnAutosaveCooldown(object? source, ElapsedEventArgs e)
+    {
+        try
+        {
+            if (_awaitingSave) await SaveList(true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
     Task SaveListButtonClicked() => SaveList(true);
-    
+
     Task AddNewProductButtonClicked()
     {
         try
         {
             AddingProduct = true;
-            
+
             if (string.IsNullOrWhiteSpace(NewProductName))
             {
                 return Task.CompletedTask;
@@ -171,13 +185,13 @@ public partial class ShoppingListPartial
             AddingProduct = false;
         }
     }
-    
+
     Task RemoveProductButtonClicked(string productName)
     {
         try
         {
             RemovingProduct = true;
-            
+
             if (string.IsNullOrWhiteSpace(productName))
             {
                 return Task.CompletedTask;
