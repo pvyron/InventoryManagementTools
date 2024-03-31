@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
-using System.Timers;
+﻿using System.Timers;
+using InMa.Shopping.Components.Account;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;
 
-namespace InMa.Shopping.Components.Partials;
+namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
 public partial class ShoppingListPartial
 {

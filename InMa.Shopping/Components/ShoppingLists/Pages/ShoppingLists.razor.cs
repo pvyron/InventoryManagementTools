@@ -2,7 +2,7 @@
 using InMa.Shopping.DomainExtensions;
 using Microsoft.AspNetCore.Components;
 
-namespace InMa.Shopping.Components.Pages;
+namespace InMa.Shopping.Components.ShoppingLists.Pages;
 
 public partial class ShoppingLists
 {
