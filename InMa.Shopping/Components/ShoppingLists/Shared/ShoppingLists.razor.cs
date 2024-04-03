@@ -1,17 +1,16 @@
-﻿using InMa.Shopping.Components.Account;
-using InMa.Shopping.Data;
-using InMa.Shopping.Data.Repositories.Abstractions;
+﻿using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.DomainExtensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace InMa.Shopping.Components.ShoppingLists.Pages;
+namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
 public partial class ShoppingLists
 {
     [Inject] private IListsRepository listsRepository { get; set; } = null!;
     [Inject] private NavigationManager navigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    [Parameter] public ShoppingListStateEnum ListState { get; set; }
 
     private string? _username;
     private List<DomainModels.List> lists { get; set; } = new();
@@ -23,7 +22,7 @@ public partial class ShoppingLists
 
         _username ??= (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
         
-        lists = await listsRepository.GetShoppingListsForUser(await GetUsername(), CancellationToken.None).ToListAsync();
+        lists = await listsRepository.GetOpenShoppingListsForUser(await GetUsername(), CancellationToken.None).ToListAsync();
     }
 
     void SelectedListChanged(string? pickedListId)
@@ -38,8 +37,9 @@ public partial class ShoppingLists
     {
         if (selectedList is null)
             return;
-       
-        navigationManager.NavigateTo($"/lists/saved/{selectedList.Id}");
+        navigationManager.NavigateTo(ListState == ShoppingListStateEnum.Open
+            ? $"/lists/open/{selectedList.Id}"
+            : $"/lists/completed/{selectedList.Id}");
     }
 
     void GoToNewList()

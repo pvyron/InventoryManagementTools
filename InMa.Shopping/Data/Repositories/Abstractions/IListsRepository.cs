@@ -5,13 +5,13 @@ namespace InMa.Shopping.Data.Repositories.Abstractions;
 
 public interface IListsRepository : IStartupProcess
 {
-    ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken);
+    ValueTask<List> UpdateOpenShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken);
 
-    ValueTask<List> SaveShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken);
+    ValueTask<List> SaveOpenShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken);
 
-    ValueTask DeleteShoppingList(string userId, string listId, CancellationToken cancellationToken);
+    ValueTask DeleteOpenShoppingList(string userId, string listId, CancellationToken cancellationToken);
     
-    ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken);
+    ValueTask<List?> GetOpenShoppingList(string userId, string listId, CancellationToken cancellationToken);
 
-    ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken);
+    ValueTask<IEnumerable<List>> GetOpenShoppingListsForUser(string userId, CancellationToken cancellationToken);
 }

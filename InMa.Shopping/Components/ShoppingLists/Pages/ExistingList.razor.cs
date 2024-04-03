@@ -2,7 +2,7 @@
 
 namespace InMa.Shopping.Components.ShoppingLists.Pages;
 
-public partial class ShoppingList
+public partial class ExistingList
 {
     [Parameter] public string? ListId { get; set; }
 }

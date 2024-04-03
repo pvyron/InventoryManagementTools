@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
-public partial class ShoppingListPartial
+public partial class ShoppingList
 {
     [Inject] private IListsRepository ListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
@@ -45,7 +45,7 @@ public partial class ShoppingListPartial
         if (ListId is null)
             return;
 
-        var list = await ListsRepository.GetShoppingList(await GetUsername(), ListId, CancellationToken.None);
+        var list = await ListsRepository.GetOpenShoppingList(await GetUsername(), ListId, CancellationToken.None);
 
         if (list is null)
         {
@@ -94,7 +94,7 @@ public partial class ShoppingListPartial
                 };
 
                 var newList =
-                    await ListsRepository.SaveShoppingList(await GetUsername(), saveData, CancellationToken.None);
+                    await ListsRepository.SaveOpenShoppingList(await GetUsername(), saveData, CancellationToken.None);
 
                 NavigationManager.NavigateTo($"/lists/saved/{newList.Id}");
             }
@@ -108,7 +108,7 @@ public partial class ShoppingListPartial
                 };
 
                 var updatedList =
-                    await ListsRepository.UpdateShoppingList(await GetUsername(), updateData, CancellationToken.None);
+                    await ListsRepository.UpdateOpenShoppingList(await GetUsername(), updateData, CancellationToken.None);
             }
 
             Console.WriteLine("Save completed");
@@ -130,7 +130,7 @@ public partial class ShoppingListPartial
             if (ListId is null)
                 return;
 
-            await ListsRepository.DeleteShoppingList(await GetUsername(), ListId, CancellationToken.None);
+            await ListsRepository.DeleteOpenShoppingList(await GetUsername(), ListId, CancellationToken.None);
 
             NavigationManager.NavigateTo("/lists");
         }

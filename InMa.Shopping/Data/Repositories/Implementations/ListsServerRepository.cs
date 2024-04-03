@@ -19,7 +19,7 @@ public sealed class ListsServerRepository : IListsRepository
         _tableClient = new(configuration.GetConnectionString("StorageAccount"), configuration.GetValue<string>("ShoppingLists:ListsTable"));
     }
 
-    public async ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)
+    public async ValueTask<List> UpdateOpenShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)
     {
         List list = new()
         {
@@ -63,7 +63,7 @@ public sealed class ListsServerRepository : IListsRepository
         return list;
     }
     
-    public ValueTask<List> SaveShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken)
+    public ValueTask<List> SaveOpenShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken)
     {
         var updateData = new UpdateShoppingListData
         {
@@ -72,10 +72,10 @@ public sealed class ListsServerRepository : IListsRepository
             Items = saveData.Items
         };
         
-        return UpdateShoppingList(userId, updateData, cancellationToken);
+        return UpdateOpenShoppingList(userId, updateData, cancellationToken);
     }
 
-    public async ValueTask DeleteShoppingList(string userId, string listId, CancellationToken cancellationToken)
+    public async ValueTask DeleteOpenShoppingList(string userId, string listId, CancellationToken cancellationToken)
     {
         try
         {
@@ -91,7 +91,7 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    public async ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken)
+    public async ValueTask<List?> GetOpenShoppingList(string userId, string listId, CancellationToken cancellationToken)
     {
         try
         {
@@ -133,7 +133,7 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    public async ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
+    public async ValueTask<IEnumerable<List>> GetOpenShoppingListsForUser(string userId, CancellationToken cancellationToken)
     {
         try
         {
