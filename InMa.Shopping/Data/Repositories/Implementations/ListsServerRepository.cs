@@ -12,11 +12,14 @@ public sealed class ListsServerRepository : IListsRepository
     private readonly ILogger<ListsServerRepository> _logger;
     private readonly TableClient _tableClient;
     
-    public ListsServerRepository(IConfiguration configuration, ILogger<ListsServerRepository> logger)
+    public ListsServerRepository(ILogger<ListsServerRepository> logger, string? connectionString, string? tableName)
     {
         _logger = logger;
 
-        _tableClient = new(configuration.GetConnectionString("StorageAccount"), configuration.GetValue<string>("ShoppingLists:ListsTable"));
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString, nameof(connectionString));
+        ArgumentException.ThrowIfNullOrWhiteSpace(tableName, nameof(tableName));
+        
+        _tableClient = new(connectionString, tableName);
     }
 
     public async ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)

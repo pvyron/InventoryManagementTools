@@ -1,9 +1,8 @@
-﻿@page "/lists"
-@using Microsoft.AspNetCore.Authorization
+﻿@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Shopping lists</h3>
+<h3>Shopping lists @ListState.ToString()</h3>
 
 @if (selectedList is not null)
 {

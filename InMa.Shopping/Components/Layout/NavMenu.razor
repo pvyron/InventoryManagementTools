@@ -9,7 +9,10 @@
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="lists" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Shopping lists</FluentNavLink>
+            <FluentNavGroup Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent" Title="Shopping lists">
+                <FluentNavLink Href="lists/open" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Open</FluentNavLink>
+                <FluentNavLink Href="lists/completed" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Completed</FluentNavLink>
+            </FluentNavGroup>
             <AuthorizeView>
                 <Authorized>
                     <FluentNavLink Href="Account/Manage">@context.User.Identity?.Name</FluentNavLink>

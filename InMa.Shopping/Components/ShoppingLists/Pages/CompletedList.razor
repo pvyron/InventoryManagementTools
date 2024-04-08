@@ -1,0 +1,6 @@
+﻿@page "/lists/completed/{listId}"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<InMa.Shopping.Components.ShoppingLists.Shared.ShoppingList ListId="@ListId" ListState="@ShoppingListStateEnum.Completed" />
