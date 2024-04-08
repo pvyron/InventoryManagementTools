@@ -82,6 +82,7 @@ app.MapAdditionalIdentityEndpoints();
 
 app.Run();
 
+
 async Task RunStartupSequence(WebApplication application)
 {
     using var scope = application.Services.CreateScope();
