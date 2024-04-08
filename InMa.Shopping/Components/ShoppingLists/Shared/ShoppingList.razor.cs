@@ -13,10 +13,12 @@ namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
 public partial class ShoppingList
 {
-    [Inject] private IListsRepository ListsRepository { get; set; } = null!;
+    [Inject(Key = "Open")] private IListsRepository OpenListsRepository { get; set; } = null!;
+    [Inject(Key = "Completed")] private IListsRepository CompletedListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Parameter] public string? ListId { get; set; }
+    [Parameter] public ShoppingListStateEnum ListState { get; set; }
 
     private string? _username;
     private System.Timers.Timer _savingCooldown = new(10000)
@@ -41,13 +43,19 @@ public partial class ShoppingList
         await base.OnInitializedAsync();
 
         _username ??= (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
-        
+
         if (ListId is null)
             return;
 
-        var list = await ListsRepository.GetOpenShoppingList(await GetUsername(), ListId, CancellationToken.None);
-
-        if (list is null)
+        var list = ListState switch
+        {
+            ShoppingListStateEnum.Completed => await CompletedListsRepository.GetShoppingList(await GetUsername(),
+                ListId, CancellationToken.None),
+            _ => await OpenListsRepository.GetShoppingList(await GetUsername(), ListId,
+                CancellationToken.None)
+        };
+    
+    if (list is null)
         {
             NavigationManager.NavigateTo("/error");
             return;
@@ -93,10 +101,18 @@ public partial class ShoppingList
                     Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
-                var newList =
-                    await ListsRepository.SaveOpenShoppingList(await GetUsername(), saveData, CancellationToken.None);
-
-                NavigationManager.NavigateTo($"/lists/saved/{newList.Id}");
+                var newList = ListState switch
+                {
+                    ShoppingListStateEnum.Completed =>
+                        await CompletedListsRepository.SaveShoppingList(await GetUsername(), saveData,
+                            CancellationToken.None),
+                    _ => await OpenListsRepository.SaveShoppingList(await GetUsername(), saveData,
+                            CancellationToken.None),
+                };
+                
+                NavigationManager.NavigateTo(ListState == ShoppingListStateEnum.Completed
+                    ? $"/lists/completed/{newList.Id}"
+                    : $"/lists/open/{newList.Id}");
             }
             else
             {
@@ -107,12 +123,47 @@ public partial class ShoppingList
                     Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
-                var updatedList =
-                    await ListsRepository.UpdateOpenShoppingList(await GetUsername(), updateData, CancellationToken.None);
+                var updatedList = ListState switch
+                {
+                    ShoppingListStateEnum.Completed => await CompletedListsRepository.UpdateShoppingList(
+                        await GetUsername(), updateData, CancellationToken.None),
+                    _ => await OpenListsRepository.UpdateShoppingList(await GetUsername(), updateData,
+                        CancellationToken.None)
+                };
             }
+        }
+        finally
+        {
+            SavingList = false;
+            _awaitingSave = false;
+        }
+    }
 
-            Console.WriteLine("Save completed");
-            await Task.Delay(1000);
+    async Task CompleteList()
+    {
+        try
+        {
+            _awaitingSave = false;
+            SavingList = true;
+
+            if (string.IsNullOrWhiteSpace(ListViewModel.ListName) || ListId is null || ListState == ShoppingListStateEnum.Completed)
+                return;
+
+            var saveData = new SaveShoppingListData
+            {
+                Name = ListViewModel.ListName,
+                Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
+            };
+
+            var newList =
+                await CompletedListsRepository.SaveShoppingList(await GetUsername(), saveData, CancellationToken.None);
+
+            await OpenListsRepository.DeleteShoppingList(await GetUsername(), ListId, CancellationToken.None);
+            
+            // TODO manage transaction maybe?
+            // investigate for CQRS pattern or a domain shopping service
+
+            NavigationManager.NavigateTo($"/lists/completed/{newList.Id}");
         }
         finally
         {
@@ -130,9 +181,21 @@ public partial class ShoppingList
             if (ListId is null)
                 return;
 
-            await ListsRepository.DeleteOpenShoppingList(await GetUsername(), ListId, CancellationToken.None);
+            switch (ListState)
+            {
+                case ShoppingListStateEnum.Completed:
+                    await CompletedListsRepository.DeleteShoppingList(await GetUsername(),
+                        ListId, CancellationToken.None);
+                    break;
+                case ShoppingListStateEnum.Open:
+                default:
+                    await OpenListsRepository.DeleteShoppingList(await GetUsername(), ListId, CancellationToken.None);
+                    break;
+            }
 
-            NavigationManager.NavigateTo("/lists");
+            NavigationManager.NavigateTo(ListState == ShoppingListStateEnum.Completed
+                ? $"/lists/completed"
+                : $"/lists/open");
         }
         finally
         {
@@ -159,6 +222,8 @@ public partial class ShoppingList
 
     Task SaveListButtonClicked() => SaveList(true);
 
+    Task CompleteListButtonClicked() => CompleteList();
+    
     Task AddNewProductButtonClicked()
     {
         try

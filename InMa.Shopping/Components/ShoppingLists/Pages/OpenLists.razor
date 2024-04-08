@@ -1,3 +1,6 @@
 ﻿@page "/lists/open"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
 
 <InMa.Shopping.Components.ShoppingLists.Shared.ShoppingLists ListState="@ShoppingListStateEnum.Open" />

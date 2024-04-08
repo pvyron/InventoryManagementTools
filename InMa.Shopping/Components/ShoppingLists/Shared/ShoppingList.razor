@@ -1,15 +1,37 @@
-﻿
+﻿@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
+
 <h3>@ShoppingListTittle</h3>
+<p>@ListState.ToString()</p>
 <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
               Appearance="Appearance.Accent"
               Loading="@SavingList"
               OnClick="@SaveListButtonClicked">
     Save
-    </FluentButton>
+</FluentButton>
+
 @if (ListId is not null)
 {
+    if (ListState == ShoppingListStateEnum.Completed)
+    {
+        // TODO here we provide information to the list.
+        // from here the next user story will be provided by information
+    }
+    else
+    {
+        <FluentButton IconStart="@(new Icons.Filled.Size28.Save())"
+                      Appearance="Appearance.Accent"
+                      Loading="@SavingList"
+                      Disabled="@(SavingList || ListState == ShoppingListStateEnum.Completed || ListId is null)"
+                      OnClick="@CompleteListButtonClicked">
+            Complete
+        </FluentButton>
+    }
+    
     <FluentButton IconStart="@(new Icons.Regular.Size28.Delete())"
                   Appearance="Appearance.Accent"
+                  Disabled="@(SavingList || ListId is null)"
                   Loading="@DeletingList"
                   OnClick="@DeleteList">
         Delete

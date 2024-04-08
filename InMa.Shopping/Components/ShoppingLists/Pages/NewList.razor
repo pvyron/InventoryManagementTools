@@ -1,5 +1,7 @@
 ﻿@page "/lists/new"
+@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
+@attribute [Authorize]
 
 <InMa.Shopping.Components.ShoppingLists.Shared.ShoppingList ListId="@null" />
 

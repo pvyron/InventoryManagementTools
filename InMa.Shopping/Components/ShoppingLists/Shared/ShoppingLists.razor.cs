@@ -7,8 +7,9 @@ namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
 public partial class ShoppingLists
 {
-    [Inject] private IListsRepository listsRepository { get; set; } = null!;
-    [Inject] private NavigationManager navigationManager { get; set; } = null!;
+    [Inject(Key = "Open")] private IListsRepository OpenListsRepository { get; set; } = null!;
+    [Inject(Key = "Completed")] private IListsRepository CompletedListsRepository { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Parameter] public ShoppingListStateEnum ListState { get; set; }
 
@@ -21,8 +22,14 @@ public partial class ShoppingLists
         await base.OnInitializedAsync();
 
         _username ??= (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
-        
-        lists = await listsRepository.GetOpenShoppingListsForUser(await GetUsername(), CancellationToken.None).ToListAsync();
+
+        lists = ListState switch
+        {
+            ShoppingListStateEnum.Completed => await CompletedListsRepository
+                .GetShoppingListsForUser(await GetUsername(), CancellationToken.None).ToListAsync(),
+            _ => await OpenListsRepository.GetShoppingListsForUser(await GetUsername(), CancellationToken.None)
+                .ToListAsync()
+        };
     }
 
     void SelectedListChanged(string? pickedListId)
@@ -37,14 +44,14 @@ public partial class ShoppingLists
     {
         if (selectedList is null)
             return;
-        navigationManager.NavigateTo(ListState == ShoppingListStateEnum.Open
-            ? $"/lists/open/{selectedList.Id}"
-            : $"/lists/completed/{selectedList.Id}");
+        NavigationManager.NavigateTo(ListState == ShoppingListStateEnum.Completed
+            ? $"/lists/completed/{selectedList.Id}"
+            : $"/lists/open/{selectedList.Id}");
     }
 
     void GoToNewList()
     {
-        navigationManager.NavigateTo($"/lists/new", true);
+        NavigationManager.NavigateTo($"/lists/new", true);
     }
     
     async Task<string> GetUsername()
