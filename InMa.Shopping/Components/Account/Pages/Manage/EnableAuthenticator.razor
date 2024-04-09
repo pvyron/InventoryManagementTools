@@ -6,7 +6,7 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using InMa.Shopping.Data
-@using IronBarCode
+@using QRCoder
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityUserAccessor UserAccessor
@@ -80,7 +80,11 @@ else
 
         await LoadSharedKeyAndQrCodeUriAsync(user);
 
-        qrBase64PngBinaryData ??= Convert.ToBase64String(QRCodeWriter.CreateQrCode(authenticatorUri, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData());
+        QRCodeGenerator qrGenerator = new QRCodeGenerator();
+        QRCodeData qrCodeData = qrGenerator.CreateQrCode(authenticatorUri, QRCodeGenerator.ECCLevel.Q);
+        var qrCode = new PngByteQRCode(qrCodeData);
+        byte[] qrCodeImage = qrCode.GetGraphic(5);
+        qrBase64PngBinaryData ??= Convert.ToBase64String(qrCodeImage);
     }
 
     private async Task OnValidSubmitAsync()
