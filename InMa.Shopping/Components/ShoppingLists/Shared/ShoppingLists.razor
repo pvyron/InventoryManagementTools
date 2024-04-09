@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Authorization
+@using InMa.Shopping.Data
 @rendermode InteractiveServer
 @attribute [Authorize]
 
@@ -13,11 +14,14 @@
     </FluentButton>
 }
 
-<FluentButton IconStart="@(new Icons.Regular.Size28.News())"
+@if (GlobalSettings.MaxOpenShoppingLists > lists.Count)
+{
+    <FluentButton IconStart="@(new Icons.Regular.Size28.News())"
                   Appearance="Appearance.Accent"
                   OnClick="@GoToNewList">
         Create new
     </FluentButton>
+}
 
 <FluentListbox ValueChanged="@SelectedListChanged" TOption="string">
     @foreach (var list in lists)

@@ -10,6 +10,8 @@ using InMa.Shopping.Data.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+GlobalSettings.Load(builder.Configuration);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
