@@ -14,4 +14,5 @@ public interface IListsRepository : IStartupProcess
     ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken);
 
     ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken);
+    ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, bool ordered, int? limit, CancellationToken cancellationToken);
 }

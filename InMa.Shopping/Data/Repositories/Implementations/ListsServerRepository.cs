@@ -28,6 +28,8 @@ public sealed class ListsServerRepository : IListsRepository
         {
             Id = EntityId.Existing(updateData.Id),
             Name = updateData.Name,
+            CreatedAt = updateData.CreatedAt,
+            CompletedAt = updateData.CompletedAt,
             Items = updateData.Items
                 .Select(i => 
                     new ListItem
@@ -46,7 +48,9 @@ public sealed class ListsServerRepository : IListsRepository
             {
                 PartitionKey = userId,
                 RowKey = list.Id,
-                Name = list.Name
+                Name = list.Name,
+                CreatedAt = list.CreatedAt,
+                CompletedAt = list.CompletedAt
             };
             entity.SetItems(list.Items.Select(i => (i.Product, i.Status)));
             
@@ -72,6 +76,8 @@ public sealed class ListsServerRepository : IListsRepository
         {
             Id = EntityId.New(),
             Name = saveData.Name,
+            CreatedAt = saveData.CreatedAt,
+            CompletedAt = saveData.CompletedAt,
             Items = saveData.Items
         };
         
@@ -112,6 +118,8 @@ public sealed class ListsServerRepository : IListsRepository
             {
                 Id = EntityId.Existing(entity.RowKey),
                 Name = entity.Name,
+                CreatedAt = entity.CreatedAt.GetValueOrDefault(entity.Timestamp.GetValueOrDefault(DateTimeOffset.UtcNow)), // TODO remove this after ensuring data cleansing
+                CompletedAt = entity.CompletedAt,
                 Items = entity
                     .GetItems()
                     .Select(i => 
@@ -136,13 +144,20 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    public async ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
+    public ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
+    {
+        return GetShoppingListsForUser(userId, false, null, cancellationToken);
+    }
+
+    public async ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, bool ordered, int? limit, CancellationToken cancellationToken)
     {
         try
         {
             var lists = new List<List>();
+
+            var queryText = $"PartitionKey eq '{userId}'";
             
-            var listPages = _tableClient.QueryAsync<ListTableEntity>($"PartitionKey eq '{userId}'").AsPages();
+            var listPages = _tableClient.QueryAsync<ListTableEntity>(queryText, cancellationToken: cancellationToken).AsPages();
 
             await foreach (var listPage in listPages)
             {
@@ -152,6 +167,8 @@ public sealed class ListsServerRepository : IListsRepository
                     {
                         Id = EntityId.Existing(listTableEntity.RowKey),
                         Name = listTableEntity.Name,
+                        CreatedAt = listTableEntity.CreatedAt.GetValueOrDefault(listTableEntity.Timestamp.GetValueOrDefault(DateTimeOffset.UtcNow)), // TODO remove this after ensuring data cleansing
+                        CompletedAt = listTableEntity.CompletedAt,
                         Items = listTableEntity
                             .GetItems()
                             .Select(i => 
@@ -165,8 +182,17 @@ public sealed class ListsServerRepository : IListsRepository
                     });
                 }
             }
+            
+            if (!ordered && limit is null)
+                return lists;
+                
+            if (ordered && limit is not null)
+                return lists.OrderByDescending(l => l.CreatedAt).Take((int)limit);
 
-            return lists;
+            if (limit is null)
+                return lists.OrderByDescending(l => l.CreatedAt);
+
+            return lists.Take((int)limit);
         }
         catch (Exception ex)
         {

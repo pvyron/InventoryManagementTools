@@ -1,10 +1,33 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
 <PageTitle>Dashboard</PageTitle>
 
+<div style="display: flex;justify-content: space-around">
+    @foreach (var shoppingList in ShoppingLists)
+    {
+        <FluentCard Style="min-width: 200px; min-height: 300px; display: flex; flex-direction: column; justify-content: space-between;"
+                    Width="auto"
+                    Height="auto">
+            <p><b>@shoppingList.Name</b></p>
 
+            <div>
+                @foreach (var item in shoppingList.Items)
+                {
+                    <li style="padding: 3px 0 3px 0">@item.Product</li>
+                }
+            </div>
 
-<FluentCard Width="400px" Height="400px">
-    <p>Just some content in a card (with a button that does not do anything).</p>
-    <FluentButton Appearance="Appearance.Accent">Hello</FluentButton>
-</FluentCard>
+            <div style="display: flex; justify-content: flex-end">
+                <a href="@($"/lists/open/{shoppingList.Id}")">
+                    <FluentButton Style="margin-top: 20px"
+                                  Appearance="Appearance.Accent">
+                        Select
+                    </FluentButton>
+                </a>
+            </div>
+
+        </FluentCard>
+    }
+</div>

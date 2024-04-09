@@ -13,6 +13,8 @@ public class ListTableEntity : ITableEntity
     public ETag ETag { get; set; }
 
     public required string Name { get; set; }
+    public required DateTimeOffset? CreatedAt { get; set; }
+    public required DateTimeOffset? CompletedAt { get; set; }
     
     public string BoughtProducts { get; set; } = string.Empty;
     public string NotBoughtProducts { get; set; } = string.Empty;

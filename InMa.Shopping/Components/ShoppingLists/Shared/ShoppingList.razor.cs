@@ -65,6 +65,8 @@ public partial class ShoppingList
         {
             ListId = list.Id,
             ListName = list.Name,
+            CreatedAt = list.CreatedAt,
+            CompletedAt = list.CompletedAt,
             Items = list.Items
                 .Select(i =>
                     new ListItem(i.Product)
@@ -98,6 +100,8 @@ public partial class ShoppingList
                 var saveData = new SaveShoppingListData
                 {
                     Name = ListViewModel.ListName,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CompletedAt = null,
                     Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
@@ -110,6 +114,9 @@ public partial class ShoppingList
                             CancellationToken.None),
                 };
                 
+                // these two switches may be irrelevant since if list id is null then the list must be open
+                // will keep for now
+                
                 NavigationManager.NavigateTo(ListState == ShoppingListStateEnum.Completed
                     ? $"/lists/completed/{newList.Id}"
                     : $"/lists/open/{newList.Id}");
@@ -120,6 +127,8 @@ public partial class ShoppingList
                 {
                     Id = ListId,
                     Name = ListViewModel.ListName,
+                    CreatedAt = ListViewModel.CreatedAt,
+                    CompletedAt = ListViewModel.CompletedAt,
                     Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
                 };
 
@@ -152,6 +161,8 @@ public partial class ShoppingList
             var saveData = new SaveShoppingListData
             {
                 Name = ListViewModel.ListName,
+                CreatedAt = ListViewModel.CreatedAt,
+                CompletedAt = DateTimeOffset.UtcNow,
                 Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
             };
 
