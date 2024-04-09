@@ -4,3 +4,7 @@
 @attribute [Authorize]
 
 <InMa.Shopping.Components.ShoppingLists.Shared.ShoppingList ListId="@ListId" ListState="@ShoppingListStateEnum.Open" />
+
+@code {
+    [Parameter] public string? ListId { get; set; }
+}
