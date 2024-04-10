@@ -55,6 +55,8 @@ builder.Services.AddKeyedSingleton<IListsRepository>("Completed",
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
 
+builder.Services.AddSingleton<IFilesRepository, FilesRepository>();
+
 var app = builder.Build();
 
 await RunStartupSequence(app);
@@ -94,4 +96,6 @@ async Task RunStartupSequence(WebApplication application)
     {
         await scope.ServiceProvider.GetRequiredKeyedService<IListsRepository>(name).Initialize();
     }
+
+    await scope.ServiceProvider.GetRequiredService<IFilesRepository>().Initialize();
 }

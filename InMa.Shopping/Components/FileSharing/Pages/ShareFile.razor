@@ -1,4 +1,5 @@
 ﻿@page "/file/share"
+@using InMa.Shopping.Data.Repositories.Abstractions
 @using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -11,7 +12,7 @@
                  Mode="InputFileMode.Stream"
                  Multiple="true"
                  MaximumFileSize="@(20 * 1024 * 1024)"
-                 Accept=".mp4, .mov, .avi"
+                 @* Accept=".mp4, .mov, .avi" *@
                  OnFileUploaded="@OnFileUploadedAsync"
                  OnCompleted="@OnCompleted" />
 
@@ -39,6 +40,7 @@
 
 @code
 {
+    [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
     FluentInputFile? myFileByStream = default!;
     int? progressPercent;
     string? progressTitle;
@@ -47,28 +49,24 @@
 
     async Task OnFileUploadedAsync(FluentInputFileEventArgs file)
     {
-        progressPercent = file.ProgressPercent;
-        progressTitle = file.ProgressTitle;
-
-        var localFile = Path.GetTempFileName() + file.Name;
-        Files.Add(localFile);
-
-        // Write to the FileStream
-        // See other samples: https://docs.microsoft.com/en-us/aspnet/core/blazor/file-uploads
-        await using FileStream fs = new(localFile, FileMode.Create);
-        await file.Stream!.CopyToAsync(fs);
-        await file.Stream!.DisposeAsync();
+        try
+        {
+            progressPercent = file.ProgressPercent;
+            progressTitle = file.ProgressTitle;
+            Console.WriteLine("File fetched");
+            var blobId = await FilesRepository.UploadFile("test@test.test", file.Stream!, CancellationToken.None);
+            Console.WriteLine("File uploaded");
+            Files.Add(blobId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
+        }
     }
 
     void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
     {
         progressPercent = myFileByStream!.ProgressPercent;
         progressTitle = myFileByStream!.ProgressTitle;
-
-        // For the demo, delete these files.
-        foreach (var file in Files)
-        {
-            File.Delete(file);
-        }
     }
 }
