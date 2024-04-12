@@ -31,10 +31,12 @@ public sealed class FilesRepository : IFilesRepository
             Uploader = user!
         });
         
-        var blobName = $"test/{EntityId.New()}".ToLower();
-        await _containerClient.UploadBlobAsync(blobName, fileStream, cancellationToken);
-        _logger.LogInformation("Successful upload from user: {user} of file: {fileName}", uploadFileInfo.UploaderEmail, blobName);
-        return blobName;
+        await _containerClient.UploadBlobAsync(fileDb.Entity.BlobId, fileStream, cancellationToken);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("Successful upload from user: {user} of file: {fileName}", uploadFileInfo.UploaderEmail, fileDb.Entity.BlobId);
+        return fileDb.Entity.BlobId;
     }
 
     public async Task Initialize()
