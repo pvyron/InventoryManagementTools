@@ -8,8 +8,8 @@ public sealed class SharedFile : Entity
     public required string FileName { get; set; }
     
     public required string OriginalName { get; set; }
-    public required string Extension { get; set; }
-    public string OriginalFullName => $"{OriginalName}.{Extension}";
+    public required string OriginalExtension { get; set; }
+    public string OriginalFullName => $"{OriginalName}.{OriginalExtension}";
     
     private string? _uploader;
     private string? _uploaderHash;
