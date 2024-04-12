@@ -41,6 +41,8 @@
 @code
 {
     [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    
     FluentInputFile? myFileByStream = default!;
     int? progressPercent;
     string? progressTitle;
@@ -54,8 +56,17 @@
             progressPercent = file.ProgressPercent;
             progressTitle = file.ProgressTitle;
             Console.WriteLine("File fetched");
-            var blobId = await FilesRepository.UploadFile("test@test.test", file.Stream!, CancellationToken.None);
+            var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            var blobId = await FilesRepository.UploadFile(file.Stream!, new UploadFileInfo()
+            {
+                FileName = "testfile",
+                SharedFileUsers = Enumerable.Empty<string>(),
+                UploaderEmail = state.User.Identity!.Name!
+            } , CancellationToken.None);
+            
             Console.WriteLine("File uploaded");
+            
             Files.Add(blobId);
         }
         catch (Exception ex)

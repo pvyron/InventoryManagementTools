@@ -42,20 +42,20 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-builder.Services.AddKeyedSingleton<IListsRepository>("Open", 
+builder.Services.AddKeyedScoped<IListsRepository>("Open", 
     (provider, _) => 
         new ListsServerRepository(
             provider.GetRequiredService<ILogger<ListsServerRepository>>(), 
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:OpenListsTable")));
-builder.Services.AddKeyedSingleton<IListsRepository>("Completed", 
+builder.Services.AddKeyedScoped<IListsRepository>("Completed", 
     (provider, _) => 
         new ListsServerRepository(
             provider.GetRequiredService<ILogger<ListsServerRepository>>(), 
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
 
-builder.Services.AddSingleton<IFilesRepository, FilesRepository>();
+builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 
 var app = builder.Build();
 
