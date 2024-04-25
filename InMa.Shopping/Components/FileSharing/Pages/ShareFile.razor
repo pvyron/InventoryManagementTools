@@ -6,37 +6,67 @@
 
 <PageTitle>File-sharing</PageTitle>
 
-<FluentInputFile @ref="@myFileByStream"
-                 AnchorId="MyUploadStream"
-                 DragDropZoneVisible="false"
-                 Mode="InputFileMode.Stream"
+@* <FluentInputFile @ref="@myFileByStream" *@
+@*                  AnchorId="MyUploadStream" *@
+@*                  DragDropZoneVisible="false" *@
+@*                  Mode="InputFileMode.Stream" *@
+@*                  Multiple="true" *@
+@*                  MaximumFileSize="@(20 * 1024 * 1024)" *@
+@*                  $1$ Accept=".mp4, .mov, .avi" #1# *@
+@*                  OnFileUploaded="@OnFileUploadedAsync" *@
+@*                  OnCompleted="@OnCompleted" /> *@
+@* *@
+@* <FluentProgress Min="0" Max="100" Value="@progressPercent" Visible="@(progressPercent > 0)" /> *@
+@* <FluentLabel Alignment="HorizontalAlignment.Center"> *@
+@*     @progressTitle *@
+@* </FluentLabel> *@
+@* *@
+@* <FluentButton Appearance="Appearance.Accent" Id="MyUploadStream"> *@
+@*     Upload files *@
+@* </FluentButton> *@
+
+<FluentInputFile Id="my-file-uploader"
+                 Mode="InputFileMode.SaveToTemporaryFolder"
                  Multiple="true"
-                 MaximumFileSize="@(20 * 1024 * 1024)"
-                 @* Accept=".mp4, .mov, .avi" *@
-                 OnFileUploaded="@OnFileUploadedAsync"
-                 OnCompleted="@OnCompleted" />
+                 MaximumFileCount="4"
+                 MaximumFileSize="@(10*1024*1024)"
+                 Accept="image/*"
+                 @bind-ProgressPercent="@ProgressPercent"
+                 OnCompleted="@OnCompletedAsync"
+                 Style="height: 300px; border: 1px dashed var(--accent-fill-rest);">
+    <ChildContent>
+        <label for="my-file-uploader">
+            <FluentIcon Value="@(new @Icons.Regular.Size24.ArrowUpload())" />
+        </label>
 
-<FluentProgress Min="0" Max="100" Value="@progressPercent" Visible="@(progressPercent > 0)" />
-<FluentLabel Alignment="HorizontalAlignment.Center">
-    @progressTitle
-</FluentLabel>
+        <div>
+            Drag files here you wish to upload,
+            or <label for="my-file-uploader">browse</label>
+            for them<span style="color: red;">*</span>.
+            <br />
+            <em>Maximum of 4 files allowed.</em>
+        </div>
 
-<FluentButton Appearance="Appearance.Accent" Id="MyUploadStream">
-    Upload files
-</FluentButton>
+        <div>
+            <br />
+            <a href="#">Read more about our supported file formats.</a>
+        </div>
+    </ChildContent>
+</FluentInputFile>
 
-@if (Files.Any())
-{
-    <h4>File(s) uploaded:</h4>
-    <ul>
-        @foreach (var file in Files)
-        {
-            <li>
-                @file
-            </li>
-        }
-    </ul>
-}
+
+@* @if (Files.Any()) *@
+@* { *@
+@*     <h4>File(s) uploaded:</h4> *@
+@*     <ul> *@
+@*         @foreach (var file in Files) *@
+@*         { *@
+@*             <li> *@
+@*                 @file *@
+@*             </li> *@
+@*         } *@
+@*     </ul> *@
+@* } *@
 
 @code
 {
@@ -47,37 +77,55 @@
     int? progressPercent;
     string? progressTitle;
 
-    List<string> Files = new();
+    //List<string> Files = new();
 
-    async Task OnFileUploadedAsync(FluentInputFileEventArgs file)
-    {
-        try
-        {
-            progressPercent = file.ProgressPercent;
-            progressTitle = file.ProgressTitle;
-            Console.WriteLine("File fetched");
-            var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            
-            var blobId = await FilesRepository.UploadFile(file.Stream!, new UploadFileInfo()
-            {
-                FileName = "testfile",
-                SharedFileUsers = Enumerable.Empty<string>(),
-                UploaderEmail = state.User.Identity!.Name!
-            } , CancellationToken.None);
-            
-            Console.WriteLine("File uploaded");
-            
-            Files.Add(blobId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
-        }
-    }
+    int ProgressPercent = 0;
+    FluentInputFileEventArgs[] Files = Array.Empty<FluentInputFileEventArgs>();
 
-    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    private async Task OnCompletedAsync(IEnumerable<FluentInputFileEventArgs> files)
     {
-        progressPercent = myFileByStream!.ProgressPercent;
-        progressTitle = myFileByStream!.ProgressTitle;
+        Files = files.ToArray();
+
+        // For the demo, delete these files.
+        foreach (var file in Files)
+        {
+            file.LocalFile?.Delete();
+        }
+
+        // Wait 3 seconds before to reset the progress bar.
+        await Task.Delay(3000);
+        ProgressPercent = 0;
     }
+    
+    // async Task OnFileUploadedAsync(FluentInputFileEventArgs file)
+    // {
+    //     try
+    //     {
+    //         progressPercent = file.ProgressPercent;
+    //         progressTitle = file.ProgressTitle;
+    //         Console.WriteLine("File fetched");
+    //         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    //         
+    //         var blobId = await FilesRepository.UploadFile(file.Stream!, new UploadFileInfo()
+    //         {
+    //             FileName = "testfile",
+    //             SharedFileUsers = Enumerable.Empty<string>(),
+    //             UploaderEmail = state.User.Identity!.Name!
+    //         } , CancellationToken.None);
+    //         
+    //         Console.WriteLine("File uploaded");
+    //         
+    //         Files.Add(blobId);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
+    //     }
+    // }
+    //
+    // void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    // {
+    //     progressPercent = myFileByStream!.ProgressPercent;
+    //     progressTitle = myFileByStream!.ProgressTitle;
+    // }
 }
