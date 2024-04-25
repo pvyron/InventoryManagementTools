@@ -51,7 +51,7 @@
 @foreach (var item in ListViewModel.Items)
 {
     <FluentStack Style="margin: 20px;">
-        <FluentCheckbox Id="@item.Product" ThreeState="true" @bind-CheckState="@item.Bought" Label="@item.Product" ValueChanged="CheckboxChanged" Style="min-width: 250px;"/>
+        <FluentCheckbox Id="@item.Product" ThreeState="false" @bind-Value="@item.IsBought" Label="@item.Product" CheckStateChanged="CheckboxChanged" Style="min-width: 250px;"/>
         <FluentButton IconStart="@(new Icons.Regular.Size12.Delete())"
                       Appearance="Appearance.Accent"
                       Loading="@RemovingProduct"

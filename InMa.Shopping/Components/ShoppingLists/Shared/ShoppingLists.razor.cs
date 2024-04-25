@@ -14,8 +14,8 @@ public partial class ShoppingLists
     [Parameter] public ShoppingListStateEnum ListState { get; set; }
 
     private string? _username;
-    private List<DomainModels.List> lists { get; set; } = new();
-    private DomainModels.List? selectedList { get; set; }
+    private List<DomainModels.ShoppingList> lists { get; set; } = new();
+    private DomainModels.ShoppingList? selectedList { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

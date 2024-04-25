@@ -6,5 +6,5 @@ public sealed record UpdateShoppingListData
     public required string Name { get; init; }
     public required DateTimeOffset CreatedAt { get; init; }
     public required DateTimeOffset? CompletedAt { get; init; }
-    public required List<(string Product, bool? Bought)> Items { get; init; }
+    public required List<(string Product, bool IsBought)> Items { get; init; }
 }
