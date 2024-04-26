@@ -12,7 +12,7 @@ public partial class Home
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
     private string? _username;
-    private List<List> ShoppingLists { get; set; } = new();
+    private List<ShoppingList> ShoppingLists { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {

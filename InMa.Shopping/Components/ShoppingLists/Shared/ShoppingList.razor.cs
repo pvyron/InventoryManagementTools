@@ -1,10 +1,6 @@
 ﻿using System.Timers;
-using InMa.Shopping.Components.Account;
-using InMa.Shopping.Components.Layout;
-using InMa.Shopping.Data;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
-using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -71,7 +67,7 @@ public partial class ShoppingList
                 .Select(i =>
                     new ListItem(i.Product)
                     {
-                        Bought = i.Status.ToNullableBool()
+                        IsBought = i.IsBought
                     })
                 .ToList()
         };
@@ -102,7 +98,7 @@ public partial class ShoppingList
                     Name = ListViewModel.ListName,
                     CreatedAt = DateTimeOffset.UtcNow,
                     CompletedAt = null,
-                    Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
+                    Items = ListViewModel.Items.Select(i => (i.Product, i.IsBought)).ToList()
                 };
 
                 var newList = ListState switch
@@ -129,7 +125,7 @@ public partial class ShoppingList
                     Name = ListViewModel.ListName,
                     CreatedAt = ListViewModel.CreatedAt,
                     CompletedAt = ListViewModel.CompletedAt,
-                    Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
+                    Items = ListViewModel.Items.Select(i => (i.Product, i.IsBought)).ToList()
                 };
 
                 var updatedList = ListState switch
@@ -163,7 +159,7 @@ public partial class ShoppingList
                 Name = ListViewModel.ListName,
                 CreatedAt = ListViewModel.CreatedAt,
                 CompletedAt = DateTimeOffset.UtcNow,
-                Items = ListViewModel.Items.Select(i => (i.Product, i.Bought)).ToList()
+                Items = ListViewModel.Items.Select(i => (i.Product, i.IsBought)).ToList()
             };
 
             var newList =

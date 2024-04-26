@@ -2,7 +2,6 @@
 using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
-using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.DomainModels;
 
 namespace InMa.Shopping.Data.Repositories.Implementations;
@@ -22,9 +21,9 @@ public sealed class ListsServerRepository : IListsRepository
         _tableClient = new(connectionString, tableName);
     }
 
-    public async ValueTask<List> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)
+    public async ValueTask<ShoppingList> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken)
     {
-        List list = new()
+        ShoppingList shoppingList = new()
         {
             Id = EntityId.Existing(updateData.Id),
             Name = updateData.Name,
@@ -32,11 +31,11 @@ public sealed class ListsServerRepository : IListsRepository
             CompletedAt = updateData.CompletedAt,
             Items = updateData.Items
                 .Select(i => 
-                    new ListItem
+                    new ShoppingListItem
                     {
                         Id = EntityId.New(), 
                         Product = i.Product, 
-                        Status = i.Bought.ToListItemBoughtStatus()
+                        IsBought = i.IsBought
                     })
                 .ToList()
         };
@@ -47,12 +46,12 @@ public sealed class ListsServerRepository : IListsRepository
             ListTableEntity entity = new()
             {
                 PartitionKey = userId,
-                RowKey = list.Id,
-                Name = list.Name,
-                CreatedAt = list.CreatedAt,
-                CompletedAt = list.CompletedAt
+                RowKey = shoppingList.Id,
+                Name = shoppingList.Name,
+                CreatedAt = shoppingList.CreatedAt,
+                CompletedAt = shoppingList.CompletedAt
             };
-            entity.SetItems(list.Items.Select(i => (i.Product, i.Status)));
+            entity.SetItems(shoppingList.Items.Select(i => (i.Product, i.IsBought)));
             
             await _tableClient.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace,
                 cancellationToken: cancellationToken);
@@ -61,16 +60,16 @@ public sealed class ListsServerRepository : IListsRepository
         {
             _logger.LogWarning(
                 "Failed to save shopping list with id: {shoppingListId} for user: {userId}, with items: {items}. Error: {errorMessage}", 
-                list.Id,
+                shoppingList.Id,
                 userId, 
-                string.Join(", ", updateData.Items.Select(i => $"{i.Product} - {i.Bought.GetValueOrDefault(false)}")), 
+                string.Join(", ", updateData.Items.Select(i => $"{i.Product} - {i.IsBought}")), 
                 ex.Message);
         }
         
-        return list;
+        return shoppingList;
     }
     
-    public ValueTask<List> SaveShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken)
+    public ValueTask<ShoppingList> SaveShoppingList(string userId, SaveShoppingListData saveData, CancellationToken cancellationToken)
     {
         var updateData = new UpdateShoppingListData
         {
@@ -100,7 +99,7 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    public async ValueTask<List?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken)
+    public async ValueTask<ShoppingList?> GetShoppingList(string userId, string listId, CancellationToken cancellationToken)
     {
         try
         {
@@ -114,7 +113,7 @@ public sealed class ListsServerRepository : IListsRepository
 
             var entity = response.Value;
 
-            return new List()
+            return new ShoppingList()
             {
                 Id = EntityId.Existing(entity.RowKey),
                 Name = entity.Name,
@@ -123,11 +122,11 @@ public sealed class ListsServerRepository : IListsRepository
                 Items = entity
                     .GetItems()
                     .Select(i => 
-                        new ListItem
+                        new ShoppingListItem
                         {
                             Id = EntityId.New(), 
                             Product = i.Product, 
-                            Status = i.Status
+                            IsBought = i.IsBought
                         })
                     .ToList()
             };
@@ -144,16 +143,16 @@ public sealed class ListsServerRepository : IListsRepository
         }
     }
 
-    public ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
+    public ValueTask<IEnumerable<ShoppingList>> GetShoppingListsForUser(string userId, CancellationToken cancellationToken)
     {
         return GetShoppingListsForUser(userId, false, null, cancellationToken);
     }
 
-    public async ValueTask<IEnumerable<List>> GetShoppingListsForUser(string userId, bool ordered, int? limit, CancellationToken cancellationToken)
+    public async ValueTask<IEnumerable<ShoppingList>> GetShoppingListsForUser(string userId, bool ordered, int? limit, CancellationToken cancellationToken)
     {
         try
         {
-            var lists = new List<List>();
+            var lists = new List<ShoppingList>();
 
             var queryText = $"PartitionKey eq '{userId}'";
             
@@ -163,7 +162,7 @@ public sealed class ListsServerRepository : IListsRepository
             {
                 foreach (var listTableEntity in listPage.Values)
                 {
-                    lists.Add(new List
+                    lists.Add(new ShoppingList
                     {
                         Id = EntityId.Existing(listTableEntity.RowKey),
                         Name = listTableEntity.Name,
@@ -172,11 +171,11 @@ public sealed class ListsServerRepository : IListsRepository
                         Items = listTableEntity
                             .GetItems()
                             .Select(i => 
-                                new ListItem
+                                new ShoppingListItem
                                 {
                                     Id = EntityId.New(), 
                                     Product = i.Product, 
-                                    Status = i.Status
+                                    IsBought = i.IsBought
                                 })
                             .ToList()
                     });
@@ -201,7 +200,7 @@ public sealed class ListsServerRepository : IListsRepository
                 userId, 
                 ex.Message);
 
-            return Enumerable.Empty<List>();
+            return Enumerable.Empty<ShoppingList>();
         }
     }
 
