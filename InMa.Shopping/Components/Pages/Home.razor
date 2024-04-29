@@ -13,9 +13,15 @@
             <p><b>@shoppingList.Name</b></p>
 
             <div>
-                @foreach (var item in shoppingList.Items)
+                @foreach (var item in shoppingList.Items.Take(6))
                 {
-                    <li style="padding: 3px 0 3px 0">@item.Product</li>
+                    string image = item.IsBought ? new Icons.Regular.Size20.CheckmarkCircle().WithColor("green").ToDataUri() : new Icons.Regular.Size20.DismissCircle().WithColor("red").ToDataUri();
+                    <li style="padding: 3px 0 3px 0; list-style-image: url('@image') ">@item.Product</li>
+                }
+                @if (shoppingList.Items.Count > 6)
+                {
+                    string image = new Icons.Regular.Size20.QuestionCircle().WithColor("blue").ToDataUri();
+                    <li style="padding: 3px 0 3px 0; list-style-image: url('@image')">. . . .</li>
                 }
             </div>
 
