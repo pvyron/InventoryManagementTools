@@ -25,11 +25,11 @@ public class ListTableEntity : ITableEntity
 
         var result = Enumerable.Empty<(string Product, bool IsBought)>();
 
-        if (boughtProducts is not null)
-            result = result.Union(boughtProducts.Select(p => (p, true)));
-
         if (notBoughtProducts is not null)
             result = result.Union(notBoughtProducts.Select(p => (p, false)));
+
+        if (boughtProducts is not null)
+            result = result.Union(boughtProducts.Select(p => (p, true)));
         
         return result;
     }
