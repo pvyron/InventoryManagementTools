@@ -17,13 +17,11 @@ public class ListTableEntity : ITableEntity
     
     public string BoughtProducts { get; set; } = string.Empty;
     public string NotBoughtProducts { get; set; } = string.Empty;
-    public string UnknownStatusProducts { get; set; } = string.Empty;
 
     public IEnumerable<(string Product, bool IsBought)> GetItems()
     {
         var boughtProducts = JsonSerializer.Deserialize<List<string>>(BoughtProducts);
         var notBoughtProducts = JsonSerializer.Deserialize<List<string>>(NotBoughtProducts);
-        var unknownStatusProducts = JsonSerializer.Deserialize<List<string>>(UnknownStatusProducts);
 
         var result = Enumerable.Empty<(string Product, bool IsBought)>();
 
@@ -32,9 +30,6 @@ public class ListTableEntity : ITableEntity
 
         if (notBoughtProducts is not null)
             result = result.Union(notBoughtProducts.Select(p => (p, false)));
-        
-        if (unknownStatusProducts is not null)
-            result = result.Union(unknownStatusProducts.Select(p => (p, false)));
         
         return result;
     }
