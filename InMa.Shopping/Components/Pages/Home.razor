@@ -20,7 +20,7 @@
                 }
                 @if (shoppingList.Items.Count > 6)
                 {
-                    string image = new Icons.Regular.Size20.QuestionCircle().WithColor("blue").ToDataUri();
+                    string image = shoppingList.Items[5].IsBought ? new Icons.Regular.Size20.CheckmarkCircle().WithColor("green").ToDataUri() : new Icons.Regular.Size20.DismissCircle().WithColor("red").ToDataUri();
                     <li style="padding: 3px 0 3px 0; list-style-image: url('@image')">. . . .</li>
                 }
             </div>
