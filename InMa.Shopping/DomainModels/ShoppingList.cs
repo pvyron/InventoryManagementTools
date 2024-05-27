@@ -1,6 +1,6 @@
 ﻿namespace InMa.Shopping.DomainModels;
 
-public sealed record ShoppingList : Entity
+public sealed class ShoppingList : Entity
 {
     public required List<ShoppingListItem> Items { get; init; }
     public required string Name { get; set; }
