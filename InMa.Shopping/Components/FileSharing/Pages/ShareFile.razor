@@ -13,13 +13,13 @@
                  DragDropZoneVisible="false"
                  Mode="InputFileMode.Stream"
                  Multiple="true"
-                 MaximumFileSize="@(20 * 1024 * 1024)"
+                 MaximumFileSize="@(_maxFileSizeInBytes)"
                  @* Accept=".mp4, .mov, .avi" *@
                  @* OnFileUploaded="@OnFileUploadedAsync" *@
                  @* OnCompleted="@OnCompleted" *@
                  OnInputFileChange="@OnFilesSelectedAsync"/>
 
-<FluentProgress Min="0" Max="100" Value="@progressPercent" Visible="@(progressPercent > 0)" />
+<FluentProgress Min="0" Max="browserFiles.Length" Value="@progressPercent" Visible="@(progressPercent > 0)" />
 <FluentLabel Alignment="HorizontalAlignment.Center">
     @progressTitle
 </FluentLabel>
@@ -44,64 +44,3 @@
 <FluentButton Appearance="Appearance.Accent" OnClick="@UploadAllButtonClicked">
     Upload files
 </FluentButton>
-
-@code
-{
-    [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
-    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
-    
-    FluentInputFile? myFileByStream = default!;
-    int? progressPercent;
-    string? progressTitle;
-
-    //List<string> Files = new();
-
-    int ProgressPercent = 0;
-    (IBrowserFile, int)[] browserFiles = Array.Empty<(IBrowserFile, int)>();
-    
-    void OnFilesSelectedAsync(InputFileChangeEventArgs file)
-    {
-        try
-        {
-            browserFiles = file.GetMultipleFiles().Select((f, i) => (f, i)).ToArray();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
-        }
-    }
-
-    async Task UploadAllButtonClicked(MouseEventArgs args)
-    {
-        try
-        {
-            var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-            foreach (var (file, index) in browserFiles)
-            {
-                var blobId = await FilesRepository.UploadFile(
-                    file.OpenReadStream(), new UploadFileInfo()
-                    {
-                        FileName = "testfile",
-                        SharedFileUsers = Enumerable.Empty<string>(),
-                        UploaderEmail = state.User.Identity!.Name!
-                    }, CancellationToken.None);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
-        }
-    }
-    
-    async Task UploadFileClicked(IBrowserFile browserFile, int index)
-    {
-        
-    }
-
-    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
-    {
-        progressPercent = myFileByStream!.ProgressPercent;
-        progressTitle = myFileByStream!.ProgressTitle;
-    }
-}
