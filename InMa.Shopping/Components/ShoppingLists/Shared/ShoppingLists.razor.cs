@@ -7,8 +7,8 @@ namespace InMa.Shopping.Components.ShoppingLists.Shared;
 
 public partial class ShoppingLists
 {
-    [Inject(Key = "Open")] private IListsRepository OpenListsRepository { get; set; } = null!;
-    [Inject(Key = "Completed")] private IListsRepository CompletedListsRepository { get; set; } = null!;
+    [Inject(Key = "Open")] private IShoppingListsRepository OpenListsRepository { get; set; } = null!;
+    [Inject(Key = "Completed")] private IShoppingListsRepository CompletedListsRepository { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Parameter] public ShoppingListStateEnum ListState { get; set; }

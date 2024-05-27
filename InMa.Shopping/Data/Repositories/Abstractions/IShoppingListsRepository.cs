@@ -3,7 +3,7 @@ using InMa.Shopping.DomainModels;
 
 namespace InMa.Shopping.Data.Repositories.Abstractions;
 
-public interface IListsRepository : IStartupProcess
+public interface IShoppingListsRepository : IStartupProcess
 {
     ValueTask<ShoppingList> UpdateShoppingList(string userId, UpdateShoppingListData updateData, CancellationToken cancellationToken);
 

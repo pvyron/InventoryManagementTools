@@ -6,12 +6,12 @@ using InMa.Shopping.DomainModels;
 
 namespace InMa.Shopping.Data.Repositories.Implementations;
 
-public sealed class ListsServerRepository : IListsRepository
+public sealed class ShoppingListsServerRepository : IShoppingListsRepository
 {
-    private readonly ILogger<ListsServerRepository> _logger;
+    private readonly ILogger<ShoppingListsServerRepository> _logger;
     private readonly TableClient _tableClient;
     
-    public ListsServerRepository(ILogger<ListsServerRepository> logger, string? connectionString, string? tableName)
+    public ShoppingListsServerRepository(ILogger<ShoppingListsServerRepository> logger, string? connectionString, string? tableName)
     {
         _logger = logger;
 

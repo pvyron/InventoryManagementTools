@@ -42,16 +42,16 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-builder.Services.AddKeyedSingleton<IListsRepository>("Open", 
+builder.Services.AddKeyedSingleton<IShoppingListsRepository>("Open", 
     (provider, _) => 
-        new ListsServerRepository(
-            provider.GetRequiredService<ILogger<ListsServerRepository>>(), 
+        new ShoppingListsServerRepository(
+            provider.GetRequiredService<ILogger<ShoppingListsServerRepository>>(), 
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:OpenListsTable")));
-builder.Services.AddKeyedSingleton<IListsRepository>("Completed", 
+builder.Services.AddKeyedSingleton<IShoppingListsRepository>("Completed", 
     (provider, _) => 
-        new ListsServerRepository(
-            provider.GetRequiredService<ILogger<ListsServerRepository>>(), 
+        new ShoppingListsServerRepository(
+            provider.GetRequiredService<ILogger<ShoppingListsServerRepository>>(), 
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
 
@@ -92,6 +92,6 @@ async Task RunStartupSequence(WebApplication application)
 
     foreach (var name in listsRepositoryNames)
     {
-        await scope.ServiceProvider.GetRequiredKeyedService<IListsRepository>(name).Initialize();
+        await scope.ServiceProvider.GetRequiredKeyedService<IShoppingListsRepository>(name).Initialize();
     }
 }

@@ -8,7 +8,7 @@ namespace InMa.Shopping.Components.Pages;
 
 public partial class Home
 {
-    [Inject(Key = "Open")] public IListsRepository OpenListsRepository { get; set; } = null!;
+    [Inject(Key = "Open")] public IShoppingListsRepository OpenListsRepository { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
     private string? _username;

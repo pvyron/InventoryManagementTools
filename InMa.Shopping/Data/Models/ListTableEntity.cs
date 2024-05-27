@@ -18,18 +18,44 @@ public class ListTableEntity : ITableEntity
     public string BoughtProducts { get; set; } = string.Empty;
     public string NotBoughtProducts { get; set; } = string.Empty;
 
-    public IEnumerable<(string Product, bool IsBought)> GetItems()
+    public IEnumerable<(string Product, bool IsBought)> GetItems(ShoppingListItemsSortMethod method = ShoppingListItemsSortMethod.PendingFirst)
     {
         var boughtProducts = JsonSerializer.Deserialize<List<string>>(BoughtProducts);
         var notBoughtProducts = JsonSerializer.Deserialize<List<string>>(NotBoughtProducts);
 
-        var result = Enumerable.Empty<(string Product, bool IsBought)>();
+        return method switch
+        {
+            ShoppingListItemsSortMethod.DoneFirst => 
+                AggregateBoughtFirst(boughtProducts: boughtProducts, notBoughtProducts: notBoughtProducts),
+            _ => 
+                AggregatePendingFirst(boughtProducts: boughtProducts, notBoughtProducts: notBoughtProducts)
+        };
+    }
 
+    private IEnumerable<(string Product, bool IsBought)> AggregateBoughtFirst(List<string>? boughtProducts,
+        List<string>? notBoughtProducts)
+    {
+        var result = Enumerable.Empty<(string Product, bool IsBought)>();
+        
         if (notBoughtProducts is not null)
             result = result.Union(notBoughtProducts.Select(p => (p, false)));
 
         if (boughtProducts is not null)
             result = result.Union(boughtProducts.Select(p => (p, true)));
+        
+        return result;
+    }
+    
+    private IEnumerable<(string Product, bool IsBought)> AggregatePendingFirst(List<string>? boughtProducts,
+        List<string>? notBoughtProducts)
+    {
+        var result = Enumerable.Empty<(string Product, bool IsBought)>();
+
+        if (boughtProducts is not null)
+            result = result.Union(boughtProducts.Select(p => (p, true)));
+        
+        if (notBoughtProducts is not null)
+            result = result.Union(notBoughtProducts.Select(p => (p, false)));
         
         return result;
     }
@@ -54,4 +80,10 @@ public class ListTableEntity : ITableEntity
         BoughtProducts = JsonSerializer.Serialize(boughtProducts);
         NotBoughtProducts = JsonSerializer.Serialize(notBoughtProducts);
     }
+}
+
+public enum ShoppingListItemsSortMethod
+{
+    DoneFirst,
+    PendingFirst,
 }
