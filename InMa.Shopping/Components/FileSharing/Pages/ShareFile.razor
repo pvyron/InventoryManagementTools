@@ -3,6 +3,7 @@
 @using InMa.Shopping.Data.Repositories.Implementations
 @using Microsoft.AspNetCore.Authorization
 @using InMa.Shopping.Components.FileSharing.Shared
+@using Nager.Country
 @rendermode InteractiveServer
 @attribute [Authorize]
 
@@ -30,15 +31,37 @@
 
 @if (browserFiles.Any())
 {
-    <h4>File(s) to upload:</h4>
-    <ul>
+
+    <FluentGrid>
+        <FluentGridItem xs="12" sm="6" md="4">
+            <FluentSelect Label="Country" 
+                          Height="300px"
+                          Items="@(new CountryProvider().GetCountries().Select(c => new {c.Alpha2Code, c.CommonName, c.OfficialName}))"
+                          OptionValue="@(c => c.Alpha2Code.ToString())"
+                          OptionText="@(p => p.CommonName + ", " + p.OfficialName)"></FluentSelect>
+        </FluentGridItem>
+        <FluentGridItem xs="12" sm="6" md="4">
+            <FluentTextField Label="Region"></FluentTextField>
+        </FluentGridItem>
+        <FluentGridItem xs="12" sm="6" md="4">
+            <FluentTextField Label="City"></FluentTextField>
+        </FluentGridItem>
+        <FluentGridItem xs="12" sm="6" md="4">
+            <FluentDatePicker Label="Date of Capture" View="CalendarViews.Days"/>
+        </FluentGridItem>
+        <FluentGridItem xs="12" Justify="JustifyContent.FlexStart">
+            <h4>File(s) to upload:</h4>
+        </FluentGridItem>
         @foreach (var (file, fileIndex) in browserFiles)
         {
-            <li>
-                <DigitalItemProperties DigitalItem="@file" />
-            </li>
+            <FluentGridItem xs="12" Justify="JustifyContent.FlexStart">
+                <FluentTextField Label="File name" Value="@file.Name"></FluentTextField>
+                <FluentTextField Label="Content type" Value="@file.ContentType"></FluentTextField>
+                <FluentTextField Label="Last modified" Value="@file.LastModified.ToString("f")"></FluentTextField>
+                <p>Size: @(file.Size.ToString("N0")) bytes</p>
+            </FluentGridItem>
         }
-    </ul>
+    </FluentGrid>
 }
 
 <FluentButton Appearance="Appearance.Accent" OnClick="@UploadAllButtonClicked">

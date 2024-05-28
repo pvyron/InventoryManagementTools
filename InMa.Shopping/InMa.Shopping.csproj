@@ -13,6 +13,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*-*"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*-*"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*-*"/>
+        <PackageReference Include="Nager.Country" Version="4.0.0" />
+        <PackageReference Include="Nager.Country.Translation" Version="3.0.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
         <PackageReference Include="QRCoder" Version="1.4.3" />
     </ItemGroup>
