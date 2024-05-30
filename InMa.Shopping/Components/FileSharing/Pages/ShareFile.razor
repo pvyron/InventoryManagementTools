@@ -20,7 +20,7 @@
                  @* OnCompleted="@OnCompleted" *@
                  OnInputFileChange="@OnFilesSelectedAsync"/>
 
-<FluentProgress Min="0" Max="_sharedFileVm.FileProperties.Length" Value="@progressPercent" Visible="@(progressPercent > 0)" />
+<FluentProgress Min="0" Max="SharedFilesVm.FileProperties.Length" Value="@progressPercent" Visible="@(progressPercent > 0)" />
 <FluentLabel Alignment="HorizontalAlignment.Center">
     @progressTitle
 </FluentLabel>
@@ -29,24 +29,24 @@
     Choose files
 </FluentButton>
 
-@if (_sharedFileVm.FileProperties.Any())
+@if (SharedFilesVm.FileProperties.Any())
 {
     <FluentTabs>
         <p>File(s) Properties: </p>
         <FluentTab Label="Default">
             <FluentGrid>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentTextField Value="@_sharedFileVm.Tags" Label="Tag(s):"></FluentTextField>
+                    <FluentTextField @bind-Value="@SharedFilesVm.Tags" Label="Tag(s):"></FluentTextField>
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentTextField Value="@_sharedFileVm.ShareWith" Label="Share with e-mail(s):"></FluentTextField>
+                    <FluentTextField @bind-Value="@SharedFilesVm.ShareWith" Label="Share with e-mail(s):"></FluentTextField>
                 </FluentGridItem>
             </FluentGrid>
         </FluentTab>
         <FluentTab Label="Photographs">
             <FluentGrid>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentSelect Value="@_sharedFileVm.CountryCode"
+                    <FluentSelect @bind-Value="@SharedFilesVm.CountryCode"
                                   Label="Country"
                                   Height="300px"
                                   Items="@(new CountryProvider().GetCountries().Select(c => new { c.Alpha2Code, c.CommonName, c.OfficialName }))"
@@ -54,13 +54,13 @@
                                   OptionText="@(p => p.CommonName + ", " + p.OfficialName)"></FluentSelect>
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentTextField Value="@_sharedFileVm.Region" Label="Region:"></FluentTextField>
+                    <FluentTextField @bind-Value="@SharedFilesVm.Region" Label="Region:"></FluentTextField>
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentTextField Value="@_sharedFileVm.City" Label="City:"></FluentTextField>
+                    <FluentTextField @bind-Value="@SharedFilesVm.City" Label="City:"></FluentTextField>
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6" md="4">
-                    <FluentDatePicker Value="@_sharedFileVm.DateCaptured" Label="Date of Capture:" View="CalendarViews.Days"/>
+                    <FluentDatePicker @bind-Value="@SharedFilesVm.DateCaptured" Label="Date of Capture:" View="CalendarViews.Days"/>
                 </FluentGridItem>
             </FluentGrid>
         </FluentTab>
@@ -70,11 +70,11 @@
         <FluentGridItem xs="12">
             <p>File(s) to upload:</p>
         </FluentGridItem>
-        @foreach (var file in _sharedFileVm.FileProperties)
+        @foreach (var file in SharedFilesVm.FileProperties)
         {
             <FluentGridItem xs="12">
                 
-                <FluentTextField Label="File name" Minlength="2000" Value="@file.Name"></FluentTextField>
+                <FluentTextField Label="File name" Minlength="2000" @bind-Value="@file.Name"></FluentTextField>
 
                 <p>Size: @file.FileSize</p>
                 

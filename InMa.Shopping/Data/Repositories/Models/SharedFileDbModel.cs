@@ -15,7 +15,7 @@ public sealed class SharedFileDbModel
     [Required]
     public required string Tags { get; set; }
     [Required]
-    public required DateTime DateCaptured { get; set; }
+    public required DateTimeOffset DateCaptured { get; set; }
     public DateTimeOffset UploadedOn { get; set; } = DateTimeOffset.UtcNow;
     
     [Required]

@@ -15,7 +15,7 @@ public partial class ShareFile
 
     private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
 
-    private SharedFileVm _sharedFileVm = new();
+    public SharedFileVm SharedFilesVm { get; set; } = new() {DateCaptured = new DateTime(2022, 2, 3)};
     private IBrowserFile[] _inputFiles = [];
     
     FluentInputFile? myFileByStream = default!;
@@ -32,7 +32,7 @@ public partial class ShareFile
         {
             _inputFiles = file.GetMultipleFiles().ToArray();
 
-            _sharedFileVm.FileProperties =
+            SharedFilesVm.FileProperties =
                 _inputFiles.Select((f, i) =>
                         new SharedFileInputProperties
                         {
@@ -63,10 +63,11 @@ public partial class ShareFile
             for (int i = 0; i < _inputFiles.Length; i++)
             {
                 var browserFile = _inputFiles[i];
-                var fileProperties = _sharedFileVm.FileProperties[i];
-                
+                var fileProperties = SharedFilesVm.FileProperties[i];
+
                 var blobId = await FilesRepository.UploadFile(
-                    browserFile.OpenReadStream(), new UploadFileInfo()
+                    browserFile.OpenReadStream(_maxFileSizeInBytes, CancellationToken.None),
+                    new UploadFileInfo 
                     {
                         FileName = fileProperties.Name,
                         OriginalName = fileProperties.OriginalName,
@@ -74,15 +75,17 @@ public partial class ShareFile
                         LastModified = fileProperties.LastModified,
                         FileSizeBytes = fileProperties.FileSizeBytes,
                         UploaderEmail = state.User.Identity!.Name!,
-                        CountryCode = _sharedFileVm.CountryCode,
-                        Region = _sharedFileVm.Region,
-                        City = _sharedFileVm.City,
-                        DateCaptured = _sharedFileVm.DateCaptured,
-                        Tags = _sharedFileVm.Tags.Split(';').ToArray(),
-                        SharedFileUsers = _sharedFileVm.ShareWith.Split(';')
-                    }, CancellationToken.None);
+                        CountryCode = SharedFilesVm.CountryCode,
+                        Region = SharedFilesVm.Region,
+                        City = SharedFilesVm.City,
+                        DateCaptured = SharedFilesVm.DateCaptured.GetValueOrDefault(DateTime.UtcNow),
+                        Tags = SharedFilesVm.Tags.Split(';').ToArray(),
+                        SharedFileUsers = SharedFilesVm.ShareWith.Split(';')
+                    },
+                    CancellationToken.None);
                 progressPercent++;
             }
+
             progressTitle = null;
         }
         catch (Exception ex)

@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +56,15 @@ builder.Services.AddKeyedSingleton<IShoppingListsRepository>("Completed",
             provider.GetRequiredService<ILogger<ShoppingListsServerRepository>>(), 
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
+
+builder.Services.AddSingleton(new JsonSerializerOptions
+{
+    AllowTrailingCommas = true,
+    IgnoreReadOnlyFields = true,
+    IgnoreReadOnlyProperties = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+    UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
+});
 
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 

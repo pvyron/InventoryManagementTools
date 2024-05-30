@@ -7,7 +7,7 @@ public sealed class SharedFileVm
     public string CountryCode { get; set; } = string.Empty;
     public string Region { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
-    public DateTime DateCaptured { get; set; } = DateTime.Now;
+    public DateTime? DateCaptured { get; set; } = DateTime.Now;
 
     public SharedFileInputProperties[] FileProperties { get; set; } = [];
 }
