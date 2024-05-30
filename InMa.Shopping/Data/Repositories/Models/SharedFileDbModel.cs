@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace InMa.Shopping.Data.Repositories.Models;
@@ -9,9 +10,18 @@ public sealed class SharedFileDbModel
     [Required]
     [Length(1, 200)]
     public required string FileName { get; set; }
+    [Required]
+    public required long FileSizeBytes{ get; set; }
+    [Required]
+    public required string Tags { get; set; }
+    [Required]
+    public required DateTime DateCaptured { get; set; }
     public DateTimeOffset UploadedOn { get; set; } = DateTimeOffset.UtcNow;
+    
+    [Required]
     public required ApplicationUser Uploader { get; set; }
-    public ICollection<ApplicationUser> SharedFileUsers { get; set; } = new List<ApplicationUser>();
+
+    public ICollection<SharedFilesUsersLink> SharedFileUsers { get; set; } = new List<SharedFilesUsersLink>();
 
     public string BlobId => $"{Uploader.Id}/{Id}";
 }

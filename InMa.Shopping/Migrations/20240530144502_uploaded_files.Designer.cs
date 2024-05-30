@@ -3,6 +3,7 @@ using System;
 using InMa.Shopping.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InMa.Shopping.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240530144502_uploaded_files")]
+    partial class uploaded_files
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,28 +121,6 @@ namespace InMa.Shopping.Migrations
                     b.HasIndex("UploaderId");
 
                     b.ToTable("SharedFiles");
-                });
-
-            modelBuilder.Entity("InMa.Shopping.Data.Repositories.Models.SharedFilesUsersLink", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SharedFileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SharedFileId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SharedFilesUsersLink");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -285,25 +266,6 @@ namespace InMa.Shopping.Migrations
                     b.Navigation("Uploader");
                 });
 
-            modelBuilder.Entity("InMa.Shopping.Data.Repositories.Models.SharedFilesUsersLink", b =>
-                {
-                    b.HasOne("InMa.Shopping.Data.Repositories.Models.SharedFileDbModel", "SharedFile")
-                        .WithMany("SharedFileUsers")
-                        .HasForeignKey("SharedFileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InMa.Shopping.Data.ApplicationUser", "User")
-                        .WithMany("SharedFiles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SharedFile");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -357,14 +319,7 @@ namespace InMa.Shopping.Migrations
 
             modelBuilder.Entity("InMa.Shopping.Data.ApplicationUser", b =>
                 {
-                    b.Navigation("SharedFiles");
-
                     b.Navigation("UploadedFiles");
-                });
-
-            modelBuilder.Entity("InMa.Shopping.Data.Repositories.Models.SharedFileDbModel", b =>
-                {
-                    b.Navigation("SharedFileUsers");
                 });
 #pragma warning restore 612, 618
         }

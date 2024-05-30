@@ -43,7 +43,7 @@ public sealed class FilesRepository : IFilesRepository
                 if (sharedUser is null)
                     continue;
                 
-                fileDb.Entity.SharedFileUsers.Add(sharedUser);
+                fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLink(){User = sharedUser, SharedFile = fileDb.Entity});
             }
         }
         
