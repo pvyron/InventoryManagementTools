@@ -28,8 +28,24 @@ public sealed class FilesRepository : IFilesRepository
         var fileDb = _dbContext.SharedFiles.Add(new SharedFileDbModel()
         {
             FileName = uploadFileInfo.FileName,
-            Uploader = user!
+            Uploader = user!,
+            FileSizeBytes = uploadFileInfo.FileSizeBytes,
+            DateCaptured = uploadFileInfo.DateCaptured,
+            Tags = string.Join(" ", uploadFileInfo.Tags)
         });
+
+        if (uploadFileInfo.SharedFileUsers.Length > 0)
+        {
+            foreach (var sharedUserEmail in uploadFileInfo.SharedFileUsers)
+            {
+                var sharedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == sharedUserEmail, cancellationToken: cancellationToken);
+                
+                if (sharedUser is null)
+                    continue;
+                
+                fileDb.Entity.SharedFileUsers.Add(sharedUser);
+            }
+        }
         
         await _containerClient.UploadBlobAsync(fileDb.Entity.BlobId, fileStream, cancellationToken);
 

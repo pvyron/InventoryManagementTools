@@ -20,7 +20,7 @@
                  @* OnCompleted="@OnCompleted" *@
                  OnInputFileChange="@OnFilesSelectedAsync"/>
 
-<FluentProgress Min="0" Max="browserFiles.Length" Value="@progressPercent" Visible="@(progressPercent > 0)" />
+<FluentProgress Min="0" Max="_sharedFileVm.FileProperties.Length" Value="@progressPercent" Visible="@(progressPercent > 0)" />
 <FluentLabel Alignment="HorizontalAlignment.Center">
     @progressTitle
 </FluentLabel>
@@ -29,41 +29,60 @@
     Choose files
 </FluentButton>
 
-@if (browserFiles.Any())
+@if (_sharedFileVm.FileProperties.Any())
 {
+    <FluentTabs>
+        <p>File(s) Properties: </p>
+        <FluentTab Label="Default">
+            <FluentGrid>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentTextField Value="@_sharedFileVm.Tags" Label="Tag(s):"></FluentTextField>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentTextField Value="@_sharedFileVm.ShareWith" Label="Share with e-mail(s):"></FluentTextField>
+                </FluentGridItem>
+            </FluentGrid>
+        </FluentTab>
+        <FluentTab Label="Photographs">
+            <FluentGrid>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentSelect Value="@_sharedFileVm.CountryCode"
+                                  Label="Country"
+                                  Height="300px"
+                                  Items="@(new CountryProvider().GetCountries().Select(c => new { c.Alpha2Code, c.CommonName, c.OfficialName }))"
+                                  OptionValue="@(c => c.Alpha2Code.ToString())"
+                                  OptionText="@(p => p.CommonName + ", " + p.OfficialName)"></FluentSelect>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentTextField Value="@_sharedFileVm.Region" Label="Region:"></FluentTextField>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentTextField Value="@_sharedFileVm.City" Label="City:"></FluentTextField>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="4">
+                    <FluentDatePicker Value="@_sharedFileVm.DateCaptured" Label="Date of Capture:" View="CalendarViews.Days"/>
+                </FluentGridItem>
+            </FluentGrid>
+        </FluentTab>
+    </FluentTabs>
 
     <FluentGrid>
-        <FluentGridItem xs="12" sm="6" md="4">
-            <FluentSelect Label="Country" 
-                          Height="300px"
-                          Items="@(new CountryProvider().GetCountries().Select(c => new {c.Alpha2Code, c.CommonName, c.OfficialName}))"
-                          OptionValue="@(c => c.Alpha2Code.ToString())"
-                          OptionText="@(p => p.CommonName + ", " + p.OfficialName)"></FluentSelect>
+        <FluentGridItem xs="12">
+            <p>File(s) to upload:</p>
         </FluentGridItem>
-        <FluentGridItem xs="12" sm="6" md="4">
-            <FluentTextField Label="Region"></FluentTextField>
-        </FluentGridItem>
-        <FluentGridItem xs="12" sm="6" md="4">
-            <FluentTextField Label="City"></FluentTextField>
-        </FluentGridItem>
-        <FluentGridItem xs="12" sm="6" md="4">
-            <FluentDatePicker Label="Date of Capture" View="CalendarViews.Days"/>
-        </FluentGridItem>
-        <FluentGridItem xs="12" Justify="JustifyContent.FlexStart">
-            <h4>File(s) to upload:</h4>
-        </FluentGridItem>
-        @foreach (var (file, fileIndex) in browserFiles)
+        @foreach (var file in _sharedFileVm.FileProperties)
         {
-            <FluentGridItem xs="12" Justify="JustifyContent.FlexStart">
-                <FluentTextField Label="File name" Value="@file.Name"></FluentTextField>
-                <FluentTextField Label="Content type" Value="@file.ContentType"></FluentTextField>
-                <FluentTextField Label="Last modified" Value="@file.LastModified.ToString("f")"></FluentTextField>
-                <p>Size: @(file.Size.ToString("N0")) bytes</p>
+            <FluentGridItem xs="12">
+                
+                <FluentTextField Label="File name" Minlength="2000" Value="@file.Name"></FluentTextField>
+
+                <p>Size: @file.FileSize</p>
+                
             </FluentGridItem>
         }
     </FluentGrid>
-}
 
-<FluentButton Appearance="Appearance.Accent" OnClick="@UploadAllButtonClicked">
-    Upload files
-</FluentButton>
+    <FluentButton Appearance="Appearance.Accent" OnClick="@UploadAllButtonClicked">
+        Upload files
+    </FluentButton>
+}

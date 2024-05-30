@@ -1,4 +1,5 @@
 ﻿using InMa.Shopping.Data.Repositories.Abstractions;
+using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -13,6 +14,9 @@ public partial class ShareFile
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
     private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
+
+    private SharedFileVm _sharedFileVm = new();
+    private IBrowserFile[] _inputFiles = [];
     
     FluentInputFile? myFileByStream = default!;
     int? progressPercent;
@@ -21,13 +25,25 @@ public partial class ShareFile
     //List<string> Files = new();
 
     int ProgressPercent = 0;
-    (IBrowserFile, int)[] browserFiles = Array.Empty<(IBrowserFile, int)>();
     
     void OnFilesSelectedAsync(InputFileChangeEventArgs file)
     {
         try
         {
-            browserFiles = file.GetMultipleFiles().Select((f, i) => (f, i)).ToArray();
+            _inputFiles = file.GetMultipleFiles().ToArray();
+
+            _sharedFileVm.FileProperties =
+                _inputFiles.Select((f, i) =>
+                        new SharedFileInputProperties
+                        {
+                            Name = f.Name,
+                            OriginalName = f.Name,
+                            ContentType = f.ContentType,
+                            FileSizeBytes = f.Size,
+                            LastModified = f.LastModified
+                        })
+                    .ToArray();
+
             progressPercent = 0;
         }
         catch (Exception ex)
@@ -43,14 +59,27 @@ public partial class ShareFile
             var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             progressPercent = 0;
             progressTitle = "uploading files";
-            foreach (var (file, index) in browserFiles)
+
+            for (int i = 0; i < _inputFiles.Length; i++)
             {
+                var browserFile = _inputFiles[i];
+                var fileProperties = _sharedFileVm.FileProperties[i];
+                
                 var blobId = await FilesRepository.UploadFile(
-                    file.OpenReadStream(), new UploadFileInfo()
+                    browserFile.OpenReadStream(), new UploadFileInfo()
                     {
-                        FileName = "testfile",
-                        SharedFileUsers = Enumerable.Empty<string>(),
-                        UploaderEmail = state.User.Identity!.Name!
+                        FileName = fileProperties.Name,
+                        OriginalName = fileProperties.OriginalName,
+                        ContentType = fileProperties.ContentType,
+                        LastModified = fileProperties.LastModified,
+                        FileSizeBytes = fileProperties.FileSizeBytes,
+                        UploaderEmail = state.User.Identity!.Name!,
+                        CountryCode = _sharedFileVm.CountryCode,
+                        Region = _sharedFileVm.Region,
+                        City = _sharedFileVm.City,
+                        DateCaptured = _sharedFileVm.DateCaptured,
+                        Tags = _sharedFileVm.Tags.Split(';').ToArray(),
+                        SharedFileUsers = _sharedFileVm.ShareWith.Split(';')
                     }, CancellationToken.None);
                 progressPercent++;
             }
