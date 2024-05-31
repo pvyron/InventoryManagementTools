@@ -1,4 +1,4 @@
-﻿namespace InMa.Shopping.Data.Repositories.Models;
+﻿namespace InMa.Shopping.Data.Models;
 
 public sealed class FileUploadQueueMessage
 {

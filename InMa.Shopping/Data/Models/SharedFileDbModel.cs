@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace InMa.Shopping.Data.Repositories.Models;
+namespace InMa.Shopping.Data.Models;
 
 public sealed class SharedFileDbModel
 {
@@ -24,7 +22,7 @@ public sealed class SharedFileDbModel
     [Required]
     public required ApplicationUser Uploader { get; set; }
 
-    public ICollection<SharedFilesUsersLink> SharedFileUsers { get; set; } = new List<SharedFilesUsersLink>();
+    public ICollection<SharedFilesUsersLinkDbModel> SharedFileUsers { get; set; } = new List<SharedFilesUsersLinkDbModel>();
 
     public string BlobId => $"{Uploader.Id}/{Id}";
 }

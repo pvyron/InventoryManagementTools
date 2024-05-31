@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace InMa.Shopping.Data.Repositories.Models;
+namespace InMa.Shopping.Data.Models;
 
-public class SharedFilesUsersLink
+public class SharedFilesUsersLinkDbModel
 {
     [Key] 
     public Guid Id { get; set; } = Guid.NewGuid();

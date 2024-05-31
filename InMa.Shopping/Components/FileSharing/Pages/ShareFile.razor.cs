@@ -1,4 +1,5 @@
 ﻿using InMa.Shopping.Data.Repositories.Abstractions;
+using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;

@@ -1,3 +1,4 @@
+using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -8,4 +9,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<SharedFileDbModel> SharedFiles { get; set; }
+    public DbSet<SharedFilesUsersLinkDbModel> SharedFilesUsersLinks { get; set; }
 }

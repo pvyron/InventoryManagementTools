@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
+using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.DomainModels;
@@ -113,7 +114,7 @@ public sealed class FilesRepository : IFilesRepository
                 if (sharedUser is null || sharedUser.Id == user.Id)
                     continue;
 
-                fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLink()
+                fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLinkDbModel()
                     { User = sharedUser, SharedFile = fileDb.Entity });
             }
         }

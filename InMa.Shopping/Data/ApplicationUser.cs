@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -9,5 +10,5 @@ public class ApplicationUser : IdentityUser
 {
     public ICollection<SharedFileDbModel> UploadedFiles { get; set; } = new List<SharedFileDbModel>();
 
-    public ICollection<SharedFilesUsersLink> SharedFiles { get; set; } = new List<SharedFilesUsersLink>();
+    public ICollection<SharedFilesUsersLinkDbModel> SharedFiles { get; set; } = new List<SharedFilesUsersLinkDbModel>();
 }
