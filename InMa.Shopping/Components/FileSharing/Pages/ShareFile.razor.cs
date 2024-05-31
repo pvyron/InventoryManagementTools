@@ -1,4 +1,5 @@
 ﻿using InMa.Shopping.Data.Repositories.Abstractions;
+using InMa.Shopping.DomainExtensions;
 using InMa.Shopping.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -10,21 +11,15 @@ namespace InMa.Shopping.Components.FileSharing.Pages;
 
 public partial class ShareFile
 {
+    private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
+    
     [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
-
-    private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
-
-    public SharedFileVm SharedFilesVm { get; set; } = new() {DateCaptured = new DateTime(2022, 2, 3)};
-    private IBrowserFile[] _inputFiles = [];
     
-    FluentInputFile? myFileByStream = default!;
-    int? progressPercent;
-    string? progressTitle;
+    private FluentInputFile? myFileByStream = default!;
 
-    //List<string> Files = new();
-
-    int ProgressPercent = 0;
+    private SharedFileVm SharedFilesVm { get; set; } = new();
+    private IBrowserFile[] _inputFiles = [];
     
     void OnFilesSelectedAsync(InputFileChangeEventArgs file)
     {
@@ -43,8 +38,6 @@ public partial class ShareFile
                             LastModified = f.LastModified
                         })
                     .ToArray();
-
-            progressPercent = 0;
         }
         catch (Exception ex)
         {
@@ -57,51 +50,27 @@ public partial class ShareFile
         try
         {
             var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            progressPercent = 0;
-            progressTitle = "uploading files";
 
-            for (int i = 0; i < _inputFiles.Length; i++)
-            {
-                var browserFile = _inputFiles[i];
-                var fileProperties = SharedFilesVm.FileProperties[i];
+            var blobIds = await FilesRepository.UploadFiles(
+                _inputFiles.Select(f => f.OpenReadStream(_maxFileSizeInBytes, CancellationToken.None)).ToArray(),
+                new UploadFilesInfo
+                {
+                    UploaderEmail = state.User.Identity!.Name!,
+                    CountryCode = SharedFilesVm.CountryCode,
+                    Region = SharedFilesVm.Region,
+                    City = SharedFilesVm.City,
+                    DateCaptured = SharedFilesVm.DateCaptured.GetValueOrDefault(DateTime.UtcNow),
+                    Tags = SharedFilesVm.Tags.Split(';').ToArray(),
+                    SharedFileUsers = SharedFilesVm.ShareWith.Split(';'),
+                    FilesProperties = SharedFilesVm.FileProperties.Select(fileProperties => fileProperties.GetFileUploadProperties()).ToArray()
+                }, CancellationToken.None);
 
-                var blobId = await FilesRepository.UploadFile(
-                    browserFile.OpenReadStream(_maxFileSizeInBytes, CancellationToken.None),
-                    new UploadFileInfo 
-                    {
-                        FileName = fileProperties.Name,
-                        OriginalName = fileProperties.OriginalName,
-                        ContentType = fileProperties.ContentType,
-                        LastModified = fileProperties.LastModified,
-                        FileSizeBytes = fileProperties.FileSizeBytes,
-                        UploaderEmail = state.User.Identity!.Name!,
-                        CountryCode = SharedFilesVm.CountryCode,
-                        Region = SharedFilesVm.Region,
-                        City = SharedFilesVm.City,
-                        DateCaptured = SharedFilesVm.DateCaptured.GetValueOrDefault(DateTime.UtcNow),
-                        Tags = SharedFilesVm.Tags.Split(';').ToArray(),
-                        SharedFileUsers = SharedFilesVm.ShareWith.Split(';')
-                    },
-                    CancellationToken.None);
-                progressPercent++;
-            }
-
-            progressTitle = null;
+            SharedFilesVm.FileProperties = [];
+            _inputFiles = [];
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message + Environment.NewLine + ex.StackTrace);
         }
-    }
-    
-    async Task UploadFileClicked(IBrowserFile browserFile, int index)
-    {
-        
-    }
-
-    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
-    {
-        progressPercent = myFileByStream!.ProgressPercent;
-        progressTitle = myFileByStream!.ProgressTitle;
     }
 }

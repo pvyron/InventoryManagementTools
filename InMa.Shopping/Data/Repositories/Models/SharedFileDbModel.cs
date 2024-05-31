@@ -11,6 +11,9 @@ public sealed class SharedFileDbModel
     [Length(1, 200)]
     public required string FileName { get; set; }
     [Required]
+    [Length(1, 30)]
+    public required string FileExtension { get; set; }
+    [Required]
     public required long FileSizeBytes{ get; set; }
     [Required]
     public required string Tags { get; set; }
