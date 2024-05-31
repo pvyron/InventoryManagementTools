@@ -1,5 +1,4 @@
-﻿using InMa.Shopping.Data.Repositories.Abstractions;
-using InMa.Shopping.Data.Repositories.Models;
+﻿using InMa.Shopping.Data.Repositories.Models;
 using InMa.Shopping.ViewModels;
 
 namespace InMa.Shopping.DomainExtensions;

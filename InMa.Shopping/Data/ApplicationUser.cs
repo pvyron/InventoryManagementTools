@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using InMa.Shopping.Data.Models;
-using InMa.Shopping.Data.Repositories.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace InMa.Shopping.Data;

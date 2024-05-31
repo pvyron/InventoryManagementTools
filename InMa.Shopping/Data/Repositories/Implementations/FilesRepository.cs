@@ -4,7 +4,6 @@ using Azure.Storage.Queues;
 using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Models;
-using InMa.Shopping.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace InMa.Shopping.Data.Repositories.Implementations;

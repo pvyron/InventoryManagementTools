@@ -1,5 +1,4 @@
 using InMa.Shopping.Data.Models;
-using InMa.Shopping.Data.Repositories.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
