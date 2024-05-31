@@ -10,7 +10,7 @@ using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace InMa.Shopping.Components.FileSharing.Pages;
 
-public partial class ShareFile
+public partial class UploadFiles
 {
     private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
     

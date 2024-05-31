@@ -9,7 +9,12 @@
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="file/share" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.OpenFolder())" IconColor="Color.Accent">Files</FluentNavLink>
+            <FluentNavGroup IconColor="Color.Accent" Title="Files">
+                <FluentNavLink Href="files/upload" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.OpenFolder())" IconColor="Color.Accent">Upload</FluentNavLink>
+                <FluentNavLink Href="files/myfiles" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.OpenFolder())" IconColor="Color.Accent">My Files</FluentNavLink>
+                <FluentNavLink Href="files/sharedfiles" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.OpenFolder())" IconColor="Color.Accent">Shared Files</FluentNavLink>
+            </FluentNavGroup>
+            
             <FluentNavGroup Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent" Title="Shopping lists">
                 <FluentNavLink Href="lists/open" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Open</FluentNavLink>
                 <FluentNavLink Href="lists/completed" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Completed</FluentNavLink>

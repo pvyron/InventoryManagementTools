@@ -1,7 +1,6 @@
-﻿using System.Text.Json;
-using Azure;
+﻿using System.IO.Compression;
+using System.Text.Json;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
@@ -65,7 +64,7 @@ public sealed class FilesRepository : IFilesRepository
         }
 
         var result =
-            await UploadFileInternal(fileStream, fileDb.Entity.BlobId, user, uploadFileInfo, cancellationToken);
+            await UploadFileInternal(fileStream, fileDb.Entity.BlobId, uploadFileInfo, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -119,7 +118,7 @@ public sealed class FilesRepository : IFilesRepository
                     { User = sharedUser, SharedFile = fileDb.Entity });
             }
 
-            uploadTasks.Add(UploadFileInternal(fileStreams[i], fileDb.Entity.BlobId, user, new UploadFileInfo
+            uploadTasks.Add(UploadFileInternal(fileStreams[i], fileDb.Entity.BlobId, new UploadFileInfo
             {
                 City = uploadFilesInfo.City,
                 CountryCode = uploadFilesInfo.CountryCode,
@@ -143,10 +142,20 @@ public sealed class FilesRepository : IFilesRepository
         return results;
     }
 
-    private async Task<string> UploadFileInternal(Stream fileStream, string blobId, ApplicationUser user,
-        UploadFileInfo uploadFileInfo,
+    private async Task<string> UploadFileInternal(Stream fileStream, string blobId, UploadFileInfo uploadFileInfo,
         CancellationToken cancellationToken)
     {
+        // TODO replace the upload with zipped
+        // using var memoryStream = new MemoryStream();
+        // using var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create);
+        // var zipEntry = zipArchive.CreateEntry(uploadFileInfo.FileProperties.OriginalName);
+        //
+        // await using var zipStream = zipEntry.Open();
+        // await fileStream.CopyToAsync(zipStream, cancellationToken);
+        // memoryStream.Seek(0, SeekOrigin.Begin);
+        //
+        // var uploadResponse = await _containerClient.UploadBlobAsync(blobId, memoryStream, cancellationToken);
+        
         var uploadResponse = await _containerClient.UploadBlobAsync(blobId, fileStream, cancellationToken);
 
         if (!uploadResponse.HasValue)
