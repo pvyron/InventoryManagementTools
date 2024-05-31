@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
@@ -16,7 +18,8 @@ public sealed class FilesRepository : IFilesRepository
     private readonly BlobContainerClient _containerClient;
     private readonly QueueClient _queueClient;
 
-    public FilesRepository(ILogger<FilesRepository> logger, IConfiguration configuration, ApplicationDbContext dbContext, JsonSerializerOptions jsonSerializerOptions)
+    public FilesRepository(ILogger<FilesRepository> logger, IConfiguration configuration,
+        ApplicationDbContext dbContext, JsonSerializerOptions jsonSerializerOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
@@ -25,11 +28,13 @@ public sealed class FilesRepository : IFilesRepository
         _containerClient = new(configuration.GetConnectionString("StorageAccount"), "devfiles");
     }
 
-    public async Task<string> UploadFile(Stream fileStream, UploadFileInfo uploadFileInfo, CancellationToken cancellationToken)
+    public async Task<string> UploadFile(Stream fileStream, UploadFileInfo uploadFileInfo,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Upload request from user: {user}", uploadFileInfo.UploaderEmail);
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == uploadFileInfo.UploaderEmail, cancellationToken: cancellationToken);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == uploadFileInfo.UploaderEmail,
+            cancellationToken: cancellationToken);
 
         if (user is null)
         {
@@ -37,17 +42,43 @@ public sealed class FilesRepository : IFilesRepository
             return "";
         }
 
-        var result = await UploadFileInternal(fileStream, user, uploadFileInfo, cancellationToken);
-        
+        var fileDb = _dbContext.SharedFiles.Add(new SharedFileDbModel()
+        {
+            FileName = uploadFileInfo.FileProperties.FileName,
+            FileExtension = uploadFileInfo.FileProperties.FileExtension,
+            Uploader = user,
+            FileSizeBytes = uploadFileInfo.FileProperties.FileSizeBytes,
+            DateCaptured = uploadFileInfo.DateCaptured.ToUniversalTime(),
+            Tags = string.Join(" ", uploadFileInfo.Tags)
+        });
+
+        foreach (var sharedUserEmail in uploadFileInfo.SharedFileUsers)
+        {
+            var sharedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == sharedUserEmail,
+                cancellationToken: cancellationToken);
+
+            if (sharedUser is null || sharedUser.Id == user.Id)
+                continue;
+
+            fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLinkDbModel()
+                { User = sharedUser, SharedFile = fileDb.Entity });
+        }
+
+        var result =
+            await UploadFileInternal(fileStream, fileDb.Entity.BlobId, user, uploadFileInfo, cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        _logger.LogInformation("Successful upload from user: {user} of file: {fileName}", uploadFileInfo.UploaderEmail, result);
+
+        _logger.LogInformation("Successful upload from user: {user} of file: {fileName}", uploadFileInfo.UploaderEmail,
+            result);
         return result;
     }
 
     public async Task<string[]> UploadFiles(Stream[] fileStreams, UploadFilesInfo uploadFilesInfo,
         CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Upload request from user: {user}", uploadFilesInfo.UploaderEmail);
+
         if (fileStreams.Length != uploadFilesInfo.FilesProperties.Length)
         {
             _logger.LogCritical("Tried to upload multiple files with different number of streams and properties");
@@ -66,7 +97,29 @@ public sealed class FilesRepository : IFilesRepository
         List<Task<string>> uploadTasks = [];
         for (int i = 0; i < uploadFilesInfo.FilesProperties.Length; i++)
         {
-            uploadTasks.Add(UploadFileInternal(fileStreams[i], user, new UploadFileInfo
+            var fileDb = _dbContext.SharedFiles.Add(new SharedFileDbModel()
+            {
+                FileName = uploadFilesInfo.FilesProperties[i].FileName,
+                FileExtension = uploadFilesInfo.FilesProperties[i].FileExtension,
+                Uploader = user,
+                FileSizeBytes = uploadFilesInfo.FilesProperties[i].FileSizeBytes,
+                DateCaptured = uploadFilesInfo.DateCaptured.ToUniversalTime(),
+                Tags = string.Join(" ", uploadFilesInfo.Tags)
+            });
+
+            foreach (var sharedUserEmail in uploadFilesInfo.SharedFileUsers)
+            {
+                var sharedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == sharedUserEmail,
+                    cancellationToken: cancellationToken);
+
+                if (sharedUser is null || sharedUser.Id == user.Id)
+                    continue;
+
+                fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLinkDbModel()
+                    { User = sharedUser, SharedFile = fileDb.Entity });
+            }
+
+            uploadTasks.Add(UploadFileInternal(fileStreams[i], fileDb.Entity.BlobId, user, new UploadFileInfo
             {
                 City = uploadFilesInfo.City,
                 CountryCode = uploadFilesInfo.CountryCode,
@@ -90,36 +143,11 @@ public sealed class FilesRepository : IFilesRepository
         return results;
     }
 
-    private async Task<string> UploadFileInternal(Stream fileStream, ApplicationUser user, UploadFileInfo uploadFileInfo,
+    private async Task<string> UploadFileInternal(Stream fileStream, string blobId, ApplicationUser user,
+        UploadFileInfo uploadFileInfo,
         CancellationToken cancellationToken)
     {
-        var fileDb = _dbContext.SharedFiles.Add(new SharedFileDbModel()
-        {
-            FileName = uploadFileInfo.FileProperties.FileName,
-            FileExtension = uploadFileInfo.FileProperties.FileExtension,
-            Uploader = user,
-            FileSizeBytes = uploadFileInfo.FileProperties.FileSizeBytes,
-            DateCaptured = uploadFileInfo.DateCaptured.ToUniversalTime(),
-            Tags = string.Join(" ", uploadFileInfo.Tags)
-        });
-
-        if (uploadFileInfo.SharedFileUsers.Length > 0)
-        {
-            foreach (var sharedUserEmail in uploadFileInfo.SharedFileUsers)
-            {
-                var sharedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == sharedUserEmail,
-                    cancellationToken: cancellationToken);
-
-                if (sharedUser is null || sharedUser.Id == user.Id)
-                    continue;
-
-                fileDb.Entity.SharedFileUsers.Add(new SharedFilesUsersLinkDbModel()
-                    { User = sharedUser, SharedFile = fileDb.Entity });
-            }
-        }
-
-        var uploadResponse =
-            await _containerClient.UploadBlobAsync(fileDb.Entity.BlobId, fileStream, cancellationToken);
+        var uploadResponse = await _containerClient.UploadBlobAsync(blobId, fileStream, cancellationToken);
 
         if (!uploadResponse.HasValue)
         {
@@ -130,7 +158,7 @@ public sealed class FilesRepository : IFilesRepository
 
         var queueMessage = new FileUploadQueueMessage
         {
-            BlobId = fileDb.Entity.BlobId,
+            BlobId = blobId,
             Values = new()
             {
                 City = uploadFileInfo.City,
@@ -145,7 +173,7 @@ public sealed class FilesRepository : IFilesRepository
         await _queueClient.SendMessageAsync(JsonSerializer.Serialize(queueMessage, _jsonSerializerOptions),
             cancellationToken);
 
-        return fileDb.Entity.BlobId;
+        return blobId;
     }
 
     public async Task Initialize()

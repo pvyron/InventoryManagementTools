@@ -15,6 +15,7 @@ public partial class ShareFile
     private readonly long _maxFileSizeInBytes = 5L * 1_024 * 1_024 * 1_024;
     
     [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     
     private FluentInputFile? myFileByStream = default!;
@@ -68,6 +69,10 @@ public partial class ShareFile
 
             SharedFilesVm.FileProperties = [];
             _inputFiles = [];
+            
+            var dialog = await DialogService.ShowSuccessAsync($"uploaded {blobIds.Count(id => !string.IsNullOrWhiteSpace(id))} files");
+            var result = await dialog.Result;
+            var cancelled = result.Cancelled;
         }
         catch (Exception ex)
         {
