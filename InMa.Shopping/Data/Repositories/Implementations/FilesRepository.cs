@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using InMa.Shopping.Data.Models;
 using InMa.Shopping.Data.Repositories.Abstractions;
@@ -140,6 +141,14 @@ public sealed class FilesRepository : IFilesRepository
             uploadFilesInfo.UploaderEmail, string.Join(" ", results));
 
         return results;
+    }
+
+    public async Task<Stream?> DownloadFile(string blobId, CancellationToken cancellationToken)
+    {
+        var blobClient = _containerClient.GetBlobClient(blobId);
+        var downloadStreamingResponse = await blobClient.DownloadStreamingAsync(cancellationToken: cancellationToken);
+        
+        return downloadStreamingResponse?.Value.Content;
     }
 
     private async Task<string> UploadFileInternal(Stream fileStream, string blobId, UploadFileInfo uploadFileInfo,
