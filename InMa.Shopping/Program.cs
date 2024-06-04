@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -94,6 +95,39 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapGet("/hello", (ClaimsPrincipal user) =>
+{
+    var claims = string.Join(Environment.NewLine, user.Claims.Select(c => $"{c.Type}: {c.Value}"));
+    return $"{claims}";
+}).RequireAuthorization();
+
+app.MapGet("/setup", async (ClaimsPrincipal user, ApplicationDbContext dbContext) =>
+{
+    try
+    {
+        var userDb = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Identity!.Name);
+
+        if (userDb is null)
+        {
+            return $"You do not exist";
+        }
+        
+        var claimDb = new IdentityUserClaim<string>();
+        claimDb.UserId = userDb!.Id;
+        claimDb.InitializeFromClaim(new Claim("test", "test"));
+
+        dbContext.UserClaims.Add(claimDb);
+        await dbContext.SaveChangesAsync();
+        
+        var claims = string.Join(Environment.NewLine, user.Claims.Select(c => $"{c.Type}: {c.Value}"));
+        return $"{claims}";
+    }
+    catch (Exception ex)
+    {
+        return $"{ex.Message}{Environment.NewLine}{ex.StackTrace}";
+    }
+}).RequireAuthorization();
 
 app.Run();
 
