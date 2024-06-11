@@ -61,6 +61,7 @@
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)
@@ -70,7 +71,14 @@
         }
 
         Logger.LogInformation("User created a new account with password.");
-
+        
+        result = await UserManager.AddClaimsAsync(user, IdentityClaimsProvider.InitializeCustomClaims());
+        
+        if (!result.Succeeded)
+        {
+            // TODO handle error, probably add to a queue to check on a background worker
+        }
+        
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
