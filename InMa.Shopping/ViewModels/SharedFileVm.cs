@@ -1,4 +1,6 @@
-﻿namespace InMa.Shopping.ViewModels;
+﻿using InMa.Shopping.DomainExtensions;
+
+namespace InMa.Shopping.ViewModels;
 
 public sealed class SharedFileVm
 {
@@ -26,7 +28,7 @@ public sealed class SharedFileInputProperties
         init
         {
             _fileSizeBytes = value;
-            _fileSize = GetFileSize();
+            _fileSize = _fileSizeBytes.BytesAsText();
         }
     }
 
@@ -40,20 +42,7 @@ public sealed class SharedFileInputProperties
                 return _fileSize;
             }
 
-            return _fileSize = GetFileSize();
+            return _fileSize = _fileSizeBytes.BytesAsText();
         }
-    }
-
-    private string GetFileSize()
-    {
-        string[] units = ["Bytes", "kB", "MB", "GB", "TB"];
-        
-        for (int i = 0; i < units.Length; i++)
-        {
-            if (_fileSizeBytes / Math.Pow(1024, i + 1) < 1)
-                return $"{_fileSizeBytes / Math.Pow(1024, i):0.00} {units[i]}";
-        }
-
-        return $"{_fileSizeBytes / Math.Pow(1024, units.Length - 1):0.00} {units[^1]}";
     }
 }

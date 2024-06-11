@@ -1,0 +1,15 @@
+﻿@page "/files/myfiles"
+@using InMa.Shopping.DomainExtensions
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>File-sharing</PageTitle>
+
+<h3>My Files</h3>
+
+<FluentDataGrid Items="@_searchFileResults.AsQueryable()">
+    <PropertyColumn Property="@(f => f.FullName)" Sortable="true" />
+    <PropertyColumn Property="@(f => f.FileSizeBytes.BytesAsText())" Sortable="true" />
+    <PropertyColumn Property="@(f => f.UploadedOn)" Format="yyyy-MM-dd" Sortable="true" />
+</FluentDataGrid>

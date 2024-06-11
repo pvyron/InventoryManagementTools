@@ -110,6 +110,38 @@ public sealed class FilesRepository : IFilesRepository
         return downloadStreamingResponse?.Value.Content;
     }
 
+    public async Task<SearchFileResult[]> SearchFilesForUser(string uploaderEmail, CancellationToken cancellationToken)
+    {
+        //_logger.LogInformation("Upload request from user: {user}", uploadFileInfo.UploaderEmail);
+
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == uploaderEmail,
+            cancellationToken: cancellationToken);
+
+        if (user is null)
+        {
+            //_logger.LogCritical("Unauthorized user: {userEmail} tried to upload", uploadFileInfo.UploaderEmail);
+            return [];
+        }
+
+        var results = await _dbContext.SharedFiles
+            .Where(f => f.Uploader.Id == user.Id)
+            .Select(f => new SearchFileResult
+            {
+                DateCaptured = f.DateCaptured,
+                FileExtension = f.FileExtension,
+                FileName = f.FileName,
+                FileSizeBytes = f.FileSizeBytes,
+                Id = f.Id,
+                Tags = f.Tags,
+                UploadedOn = f.UploadedOn,
+                UploaderId = f.Uploader.Id
+            })
+            .Take(15)
+            .ToArrayAsync(cancellationToken);
+
+        return results;
+    }
+
     private async Task<string> UploadFileInternal(Stream fileStream, string blobId, UploadFileInfo uploadFileInfo,
         CancellationToken cancellationToken)
     {
