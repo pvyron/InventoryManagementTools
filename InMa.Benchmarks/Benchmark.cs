@@ -2,6 +2,7 @@
 
 namespace InMa.Benchmarks;
 
+[MemoryDiagnoser]
 public class Benchmark
 {
     public const long value0 = 12422L;
