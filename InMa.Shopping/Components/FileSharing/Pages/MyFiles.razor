@@ -12,4 +12,7 @@
     <PropertyColumn Property="@(f => f.FullName)" Sortable="true" />
     <PropertyColumn Property="@(f => f.FileSizeBytes.BytesAsText())" Sortable="true" />
     <PropertyColumn Property="@(f => f.UploadedOn)" Format="yyyy-MM-dd" Sortable="true" />
+    <TemplateColumn Title="View" Align="@Align.End">
+        <FluentButton aria-label="Edit item" IconEnd="@(new Icons.Regular.Size16.PreviewLink())" OnClick="@(() => NavigationManager.NavigateTo($"/files/myfiles/{context.Id}"))" />
+    </TemplateColumn>
 </FluentDataGrid>

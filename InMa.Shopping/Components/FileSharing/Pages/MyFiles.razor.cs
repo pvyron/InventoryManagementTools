@@ -10,17 +10,23 @@ public partial class MyFiles
 {
     [Inject] private IFilesRepository FilesRepository { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
+    private string? _username;
     private SearchFileResult[] _searchFileResults { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
-        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        _searchFileResults =
-            await FilesRepository.SearchFilesForUser(state.User.Identity!.Name!, CancellationToken.None);
-        
         await base.OnInitializedAsync();
+
+        _username ??= (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
+
+        _searchFileResults = await FilesRepository.SearchFilesForUser(await GetUsername(), CancellationToken.None);
+    }
+    
+    Task<string> GetUsername()
+    {
+        return Task.FromResult(_username?? "invalid-user");
     }
 }

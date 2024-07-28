@@ -114,17 +114,8 @@ public sealed class FilesRepository : IFilesRepository
     {
         //_logger.LogInformation("Upload request from user: {user}", uploadFileInfo.UploaderEmail);
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == uploaderEmail,
-            cancellationToken: cancellationToken);
-
-        if (user is null)
-        {
-            //_logger.LogCritical("Unauthorized user: {userEmail} tried to upload", uploadFileInfo.UploaderEmail);
-            return [];
-        }
-
         var results = await _dbContext.SharedFiles
-            .Where(f => f.Uploader.Id == user.Id)
+            .Where(f => f.Uploader.Email == uploaderEmail)
             .Select(f => new SearchFileResult
             {
                 DateCaptured = f.DateCaptured,

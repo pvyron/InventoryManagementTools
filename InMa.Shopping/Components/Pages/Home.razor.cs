@@ -23,8 +23,8 @@ public partial class Home
         ShoppingLists = await OpenListsRepository.GetShoppingListsForUser(await GetUsername(), true, 3, CancellationToken.None).ToListAsync();
     }
     
-    async Task<string> GetUsername()
+    Task<string> GetUsername()
     {
-        return _username?? "invalid-user";
+        return Task.FromResult(_username?? "invalid-user");
     }
 }
