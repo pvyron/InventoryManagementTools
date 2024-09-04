@@ -1,0 +1,23 @@
+﻿@page "/torrents/search"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>Torrents</PageTitle>
+
+<FluentTextField @bind-Value="@Query" Label="Add item"></FluentTextField>
+
+<FluentButton IconStart="@(new Icons.Regular.Size12.Add())"
+              Appearance="Appearance.Accent"
+              Loading="@Searching"
+              OnClick="@SearchButtonClicked">
+</FluentButton>
+
+<FluentDataGrid Items="@Torrents">
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Seeders)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Size)" Sortable="true" />
+    <TemplateColumn Title="Actions" Align="@Align.End">
+        <FluentButton aria-label="Download" IconEnd="@(new Icons.Regular.Size16.Save())" OnClick="@(async () => await DownloadTorrent(context))" />
+    </TemplateColumn>
+</FluentDataGrid>

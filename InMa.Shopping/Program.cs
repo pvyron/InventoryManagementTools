@@ -7,6 +7,7 @@ using InMa.Shopping.Components.Account;
 using InMa.Shopping.Data;
 using InMa.Shopping.Data.Repositories.Abstractions;
 using InMa.Shopping.Data.Repositories.Implementations;
+using InMa.Torrents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,8 @@ builder.Services.AddKeyedSingleton<IShoppingListsRepository>("Completed",
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
 
+builder.Services.AddTorrents();
+
 var app = builder.Build();
 
 await RunStartupSequence(app);
@@ -82,6 +85,11 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+app.MapPost("/api/url/short", async context =>
+{
+    context.Response.StatusCode = 208;
+});
+
 app.Run();
 
 
@@ -94,4 +102,6 @@ async Task RunStartupSequence(WebApplication application)
     {
         await scope.ServiceProvider.GetRequiredKeyedService<IShoppingListsRepository>(name).Initialize();
     }
+
+    await scope.ServiceProvider.GetRequiredService<TorrentDownloadService>().Initialize();
 }

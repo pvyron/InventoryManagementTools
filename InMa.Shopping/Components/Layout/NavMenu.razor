@@ -15,6 +15,7 @@
             </FluentNavGroup>
             <AuthorizeView>
                 <Authorized>
+                    <FluentNavLink Href="torrents/search" Icon="@(new Icons.Filled.Size20.Save())" IconColor="Color.Accent">Torrents</FluentNavLink>
                     <FluentNavLink Href="Account/Manage">@context.User.Identity?.Name</FluentNavLink>
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken/>
