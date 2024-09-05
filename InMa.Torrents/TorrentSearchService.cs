@@ -4,10 +4,15 @@ using System.Web;
 
 namespace InMa.Torrents;
 
-public class TorrentSearchService(IHttpClientFactory httpClientFactory)
+public class TorrentSearchService
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("torrent-search");
+    private readonly HttpClient _httpClient;
 
+    public TorrentSearchService(IHttpClientFactory httpClientFactory, TorrentSettings torrentSettings)
+    {
+        _httpClient = httpClientFactory.CreateClient();
+        _httpClient.BaseAddress = new Uri(torrentSettings.SearchApiUrl);
+    }
     public async ValueTask<Torrent[]> Search(string query, CancellationToken cancellationToken)
     {
         var encodedQuery = HttpUtility.UrlEncode(query);

@@ -7,9 +7,9 @@ public sealed class TorrentDownloadService
 {
     private readonly QueueClient _queueClient;
 
-    public TorrentDownloadService(IConfiguration configuration)
+    public TorrentDownloadService(TorrentSettings torrentSettings)
     {
-        _queueClient = new QueueClient(configuration.GetConnectionString("StorageAccount"), configuration["Torrents:QueueName"]);
+        _queueClient = new QueueClient(torrentSettings.StorageAccountConnectionString, torrentSettings.QueueName);
     }
 
     public async ValueTask QueueTorrentForDownload(Torrent torrent)

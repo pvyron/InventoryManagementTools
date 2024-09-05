@@ -56,7 +56,11 @@ builder.Services.AddKeyedSingleton<IShoppingListsRepository>("Completed",
             builder.Configuration.GetConnectionString("StorageAccount"),
             builder.Configuration.GetValue<string>("ShoppingLists:CompletedListsTable")));
 
-builder.Services.AddTorrents();
+builder.Services.AddTorrents(
+    new TorrentSettings
+    {
+        StorageAccountConnectionString = builder.Configuration.GetConnectionString("StorageAccount")!
+    });
 
 var app = builder.Build();
 

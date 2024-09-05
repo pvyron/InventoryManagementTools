@@ -4,19 +4,25 @@ namespace InMa.Torrents;
 
 public static class Extensions
 {
-    public static IServiceCollection AddTorrents(this IServiceCollection services, string azureStorageConnectionString = "")
+    public static IServiceCollection AddTorrents(this IServiceCollection services,
+        Func<TorrentSettings> torrentSettingsMethod)
     {
-        services.AddHttpClient("torrent-search", client =>
-        {
-            client.BaseAddress = new Uri("https://apibay.org/q.php");
-        });
+        var torrentSettings = torrentSettingsMethod.Invoke();
+
+        return services.AddTorrents(torrentSettings);
+    }
+
+    public static IServiceCollection AddTorrents(this IServiceCollection services, TorrentSettings torrentSettings)
+    {
+        services.AddHttpClient();
         
+        services.AddSingleton(torrentSettings);
         services.AddSingleton<TorrentSearchService>();
         services.AddSingleton<TorrentDownloadService>();
 
         return services;
     }
-    
+
     static readonly string FormatTemplate = "{0:0.00} {1}";
     static readonly string[] Units = ["Bytes", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
     
