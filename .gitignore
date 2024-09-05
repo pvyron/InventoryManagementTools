@@ -400,3 +400,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+#Production configurations that store sensitive information
+InMa.TorrentsService/appsettings.Production.json
