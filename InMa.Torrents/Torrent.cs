@@ -19,5 +19,5 @@ public record class Torrent
     public string? Imdb { get; set; }
 
     public string MagnetUrl => $"magnet:?xt=urn:btih:{InfoHash ?? ""}";
-    public string SizeText => Size != null ? $"{Size}B" : string.Empty;
+    public string SizeText => Size.BytesAsText();
 }

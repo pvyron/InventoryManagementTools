@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.Torrents", "InMa.Torre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.TestingConsole", "InMa.TestingConsole\InMa.TestingConsole.csproj", "{89A158D1-16BD-4BCE-A769-A2B103FCD9B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.TorrentsService", "InMa.TorrentsService\InMa.TorrentsService.csproj", "{A69617E2-0BA0-4BE4-A0CA-A3860A9B4566}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{89A158D1-16BD-4BCE-A769-A2B103FCD9B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89A158D1-16BD-4BCE-A769-A2B103FCD9B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89A158D1-16BD-4BCE-A769-A2B103FCD9B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A69617E2-0BA0-4BE4-A0CA-A3860A9B4566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A69617E2-0BA0-4BE4-A0CA-A3860A9B4566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A69617E2-0BA0-4BE4-A0CA-A3860A9B4566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A69617E2-0BA0-4BE4-A0CA-A3860A9B4566}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

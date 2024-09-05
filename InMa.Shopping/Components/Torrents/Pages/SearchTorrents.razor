@@ -16,7 +16,7 @@
 <FluentDataGrid Items="@Torrents">
     <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
     <PropertyColumn Property="@(p => p.Seeders)" Sortable="true" />
-    <PropertyColumn Property="@(p => p.Size)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.SizeText)" Sortable="true" />
     <TemplateColumn Title="Actions" Align="@Align.End">
         <FluentButton aria-label="Download" IconEnd="@(new Icons.Regular.Size16.Save())" OnClick="@(async () => await DownloadTorrent(context))" />
     </TemplateColumn>
