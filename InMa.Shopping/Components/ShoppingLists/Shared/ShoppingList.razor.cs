@@ -212,6 +212,7 @@ public partial class ShoppingList
 
     async Task<string> GetUsername()
     {
+        await Task.CompletedTask;
         return _username?? "invalid-user";
     }
 

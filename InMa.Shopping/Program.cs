@@ -91,6 +91,7 @@ app.MapAdditionalIdentityEndpoints();
 
 app.MapPost("/api/url/short", async context =>
 {
+    await Task.CompletedTask;
     context.Response.StatusCode = 208;
 });
 
