@@ -18,6 +18,7 @@
     <PropertyColumn Property="@(p => p.Seeders)" Sortable="true" />
     <PropertyColumn Property="@(p => p.SizeText)" Sortable="true" />
     <TemplateColumn Title="Actions" Align="@Align.End">
-        <FluentButton aria-label="Download" IconEnd="@(new Icons.Regular.Size16.Save())" OnClick="@(async () => await DownloadTorrent(context))" />
+        @* <FluentButton aria-label="Download" IconEnd="@(new Icons.Regular.Size16.Save())" OnClick="@(async () => await DownloadTorrent(context))" /> *@
+        <FluentButton aria-label="Download" IconEnd="@(new Icons.Regular.Size16.Copy())" OnClick="@(async () => await CopyTextToClipboard(context))" />
     </TemplateColumn>
 </FluentDataGrid>
