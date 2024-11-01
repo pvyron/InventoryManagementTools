@@ -34,8 +34,8 @@ public sealed class FriendGroup
     public IReadOnlyCollection<Friend> Friends => _friends;
     private List<Friend> _friends;
     
-    public IReadOnlyDictionary<Ulid, int> VetoesPerFriend => _vetoesPerFriend;
-    private Dictionary<Ulid, int> _vetoesPerFriend;
+    public IReadOnlyDictionary<Ulid, ushort> VetoesPerFriend => _vetoesPerFriend;
+    private Dictionary<Ulid, ushort> _vetoesPerFriend;
     
     public GameProposal? ActiveProposal { get; private set; }
     
@@ -71,6 +71,11 @@ public sealed class FriendGroup
         _friends.Add(friend);
     }
 
+    public void UpdateFriendsVetoes(Friend friend, ushort availableVetoes)
+    {
+        _vetoesPerFriend[friend.Id] = availableVetoes;
+    }
+
     public bool StartProposal(Friend proposer, VideoGame videoGame)
     {
         if (ActiveProposal is not null)
@@ -102,10 +107,13 @@ public sealed class FriendGroup
         if (ActiveProposal is null)
             return false;
 
+        if (vetoer.Id == ActiveProposal.ProposerId)
+            return false;
+
         if (!_vetoesPerFriend.TryGetValue(vetoer.Id, out var vetoes))
             return false;
         
-        if (vetoes < 0)
+        if (vetoes == 0)
             return false;
 
         _vetoesPerFriend[vetoer.Id]--;

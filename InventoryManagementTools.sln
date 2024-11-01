@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.TorrentsService", "InM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.GameNight", "InMa.GameNight\InMa.GameNight.csproj", "{2E5A443D-60E0-498D-96A6-CB08608D6B3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMa.GameNight.Tests", "InMa.GameNight.Tests\InMa.GameNight.Tests.csproj", "{3417F703-FAB6-4F16-A3BB-42E7ABB743DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{2E5A443D-60E0-498D-96A6-CB08608D6B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E5A443D-60E0-498D-96A6-CB08608D6B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E5A443D-60E0-498D-96A6-CB08608D6B3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3417F703-FAB6-4F16-A3BB-42E7ABB743DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3417F703-FAB6-4F16-A3BB-42E7ABB743DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3417F703-FAB6-4F16-A3BB-42E7ABB743DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3417F703-FAB6-4F16-A3BB-42E7ABB743DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
