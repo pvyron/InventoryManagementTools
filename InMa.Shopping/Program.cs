@@ -64,7 +64,7 @@ builder.Services.AddTorrents(
 
 var app = builder.Build();
 
-await RunStartupSequence(app);
+//await RunStartupSequence(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
